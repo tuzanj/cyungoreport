@@ -36,6 +36,10 @@
         ::-webkit-scrollbar-track { background: #f1f5f9; }
         ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 3px; }
         .badge { display:inline-flex; align-items:center; padding: 2px 8px; border-radius:9999px; font-size:.75rem; font-weight:600; }
+        @media (max-width: 640px) {
+            table { font-size: 0.8rem; }
+            table th, table td { padding: 0.5rem 0.75rem !important; }
+        }
     </style>
     <script src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js" defer></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
