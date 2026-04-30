@@ -59,7 +59,7 @@ include ROOT_PATH . '/views/components/layout.php';
                 </div>
             </div>
         </div>
-        <div class="p-4 grid grid-cols-2 gap-3">
+        <div class="p-4 grid grid-cols-1 sm:grid-cols-2 gap-3">
             <div class="bg-slate-50 rounded-xl p-3 text-center">
                 <div class="text-xl font-bold <?= $gpa >= 2.0 ? 'text-green-600' : 'text-red-500' ?>"><?= number_format($gpa,2) ?></div>
                 <div class="text-xs text-slate-500">GPA</div>

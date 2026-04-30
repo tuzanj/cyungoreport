@@ -108,7 +108,7 @@ $totalStudents = array_sum(array_column($report, 'total_students'));
 $totalMale     = array_sum(array_column($report, 'male_count'));
 $totalFemale   = array_sum(array_column($report, 'female_count'));
 ?>
-<div class="grid grid-cols-3 gap-4 mb-6">
+<div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
     <div class="bg-white rounded-2xl p-5 shadow-sm border border-slate-100 text-center">
         <div class="text-3xl font-bold text-teal-600"><?= $totalStudents ?></div>
         <div class="text-sm text-slate-500 mt-1">Total Enrolled</div>

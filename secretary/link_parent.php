@@ -68,7 +68,7 @@ include ROOT_PATH . '/views/components/layout.php';
                 <hr class="border-slate-100">
                 <p class="text-xs text-slate-400">Fill in parent details below to create a new parent account.</p>
 
-                <div class="grid grid-cols-2 gap-3">
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
                     <div>
                         <label class="block text-sm font-medium text-slate-700 mb-1.5">First Name *</label>
                         <input type="text" name="first_name" required

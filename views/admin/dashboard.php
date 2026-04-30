@@ -61,7 +61,7 @@ include ROOT_PATH . '/views/components/layout.php';
 
         <!-- Quick Links -->
         <h3 class="font-semibold text-slate-800 mt-5 mb-3">Quick Actions</h3>
-        <div class="grid grid-cols-2 gap-2">
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
             <?php
             $quickLinks = [
                 ['href'=>'/admin/courses.php?action=new',  'label'=>'New Course',   'icon'=>'fa-plus', 'color'=>'indigo'],

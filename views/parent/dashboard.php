@@ -52,7 +52,7 @@ $year     = $data['year'] ?? null;
 
     <div class="p-5">
         <!-- Attendance Mini Stats -->
-        <div class="grid grid-cols-4 gap-3 mb-5">
+        <div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-3 mb-5">
             <?php
             $attCards = [
                 ['label'=>'Total Classes','value'=>$att['total'] ?? 0,  'color'=>'bg-slate-50 text-slate-700'],

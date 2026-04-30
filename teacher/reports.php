@@ -104,7 +104,7 @@ $passCount = count(array_filter($classReport, fn($r) => $r['is_pass'] == 1));
 $failCount = count(array_filter($classReport, fn($r) => $r['is_pass'] == 0));
 $avg       = count($classReport) > 0 ? array_sum(array_column($classReport, 'calculated_grade')) / count($classReport) : 0;
 ?>
-<div class="grid grid-cols-3 gap-4 mb-5">
+<div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-5">
     <div class="bg-white rounded-2xl p-4 shadow-sm border border-slate-100 text-center">
         <div class="text-2xl font-bold text-blue-600"><?= count($classReport) ?></div>
         <div class="text-xs text-slate-500 mt-0.5">Total Students</div>

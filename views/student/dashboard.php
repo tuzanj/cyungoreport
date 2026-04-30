@@ -125,7 +125,7 @@ $year    = $data['year'] ?? null;
 
         <div class="bg-white rounded-2xl shadow-sm border border-slate-100 p-5">
             <h3 class="font-semibold text-slate-800 mb-3">Quick Links</h3>
-            <div class="grid grid-cols-2 gap-2">
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
                 <?php
                 $links = [
                     ['href'=>'/student/schedule.php',  'icon'=>'fa-calendar-alt',   'label'=>'Schedule',    'color'=>'text-indigo-600'],

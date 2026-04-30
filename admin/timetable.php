@@ -165,7 +165,7 @@ include ROOT_PATH . '/views/components/layout.php';
                         <?php endforeach; ?>
                     </select>
                 </div>
-                <div class="grid grid-cols-2 gap-2">
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
                     <div>
                         <label class="block text-xs font-medium text-slate-600 mb-1">Start</label>
                         <input type="time" name="start_time" class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500">
