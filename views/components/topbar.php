@@ -7,7 +7,11 @@ $notifModel = new NotificationModel();
 $unread = isLoggedIn() ? $notifModel->countUnread(currentUserId()) : 0;
 ?>
 <!-- Topbar -->
-<header class="fixed top-0 left-64 right-0 h-16 bg-white border-b border-slate-200 flex items-center px-6 z-30 shadow-sm">
+<header class="fixed top-0 left-0 right-0 md:left-64 h-16 bg-white border-b border-slate-200 flex items-center px-3 md:px-6 z-30 shadow-sm">
+    <!-- Mobile Menu Toggle -->
+    <button id="sidebarToggle" class="md:hidden p-2 text-slate-500 hover:text-indigo-600 hover:bg-indigo-50 rounded-lg transition-colors mr-2">
+        <i class="fa-solid fa-bars text-lg"></i>
+    </button>
     <div class="flex-1">
         <h1 class="text-lg font-semibold text-slate-800"><?= e($pageTitle ?? '') ?></h1>
     </div>
