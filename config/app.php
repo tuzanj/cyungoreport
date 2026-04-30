@@ -3,9 +3,9 @@
 
 define('APP_NAME', 'CYUNGO TSS REPORT');
 define('APP_LOGO_URL', 'http://cyungotss.ac.rw/assets/img/logo.jpeg');
-define('APP_ADDRESS', 'http://cyungotss.ac.rw');
+define('APP_ADDRESS', 'http://report.cyungotss.ac.rw');
 define('APP_VERSION', '1.0.0');
-define('BASE_URL', 'http://localhost/report');
+define('BASE_URL', 'http://report.cyungotss.ac.rw');
 if (!defined('ROOT_PATH')) {
     define('ROOT_PATH', dirname(__DIR__));
 }
