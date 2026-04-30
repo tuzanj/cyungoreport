@@ -31,7 +31,7 @@ $year    = $data['year'] ?? null;
 </div>
 
 <!-- Stats -->
-<div class="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-6">
+<div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
     <?php
     $passCount = count(array_filter($marks, fn($m) => $m['is_pass'] == 1));
     $failCount = count(array_filter($marks, fn($m) => $m['is_pass'] == 0));

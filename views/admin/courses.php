@@ -90,7 +90,7 @@ include ROOT_PATH . '/views/components/layout.php';
         <input type="hidden" name="form_action" value="set_grading">
         <input type="hidden" name="course_id" value="<?= e($course['id']) ?>">
         <input type="hidden" name="year_id" value="<?= e($currentYearId ?? '') ?>">
-        <div class="grid grid-cols-2 md:grid-cols-5 gap-4">
+        <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-5 gap-4">
             <?php
             $gc = $gradingCriteria ?? null;
             $fields = [

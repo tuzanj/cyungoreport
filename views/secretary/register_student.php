@@ -18,7 +18,7 @@ include ROOT_PATH . '/views/components/layout.php';
             <i class="fa-solid fa-circle-check text-green-500 text-xl mt-0.5"></i>
             <div>
                 <h4 class="font-semibold text-green-800">Student Registered Successfully!</h4>
-                <div class="mt-2 grid grid-cols-2 sm:grid-cols-3 gap-3 text-sm">
+                <div class="mt-2 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 text-sm">
                     <div class="bg-white rounded-lg p-3 border border-green-200">
                         <div class="text-xs text-slate-500">Student ID</div>
                         <div class="font-mono font-bold text-teal-700"><?= e($result['student_id']) ?></div>

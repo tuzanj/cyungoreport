@@ -12,7 +12,7 @@ include ROOT_PATH . '/views/components/layout.php';
 </div>
 
 <!-- Top Stats -->
-<div class="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-6">
+<div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
     <?php
     $cards = [
         ['label'=>'Total Students','value'=>$analytics['total_students'],'icon'=>'fa-user-graduate','color'=>'bg-indigo-500'],

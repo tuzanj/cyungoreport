@@ -32,7 +32,7 @@ $transcript = $transcriptData['transcript'] ?? [];
                 <div class="text-violet-200 text-xs">Student ID</div>
             </div>
         </div>
-        <div class="mt-4 grid grid-cols-2 sm:grid-cols-4 gap-4 text-sm">
+        <div class="mt-4 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 text-sm">
             <div>
                 <div class="text-violet-300 text-xs">Full Name</div>
                 <div class="font-semibold"><?= e(($student['first_name'] ?? '').' '.($student['last_name'] ?? '')) ?></div>
