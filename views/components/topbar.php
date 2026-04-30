@@ -7,13 +7,7 @@ $notifModel = new NotificationModel();
 $unread = isLoggedIn() ? $notifModel->countUnread(currentUserId()) : 0;
 ?>
 <!-- Topbar -->
-<header class="fixed top-0 left-0 right-0 h-16 bg-white border-b border-slate-200 flex items-center px-4 sm:px-6 z-30 shadow-sm md:left-64">
-    <div class="flex items-center gap-3 md:hidden">
-        <button @click="sidebarOpen = !sidebarOpen" class="p-2 text-slate-500 hover:text-indigo-600 hover:bg-indigo-50 rounded-lg transition-colors">
-            <i class="fa-solid fa-bars text-lg"></i>
-        </button>
-        <span class="text-sm font-semibold text-slate-700">Menu</span>
-    </div>
+<header class="fixed top-0 left-64 right-0 h-16 bg-white border-b border-slate-200 flex items-center px-6 z-30 shadow-sm">
     <div class="flex-1">
         <h1 class="text-lg font-semibold text-slate-800"><?= e($pageTitle ?? '') ?></h1>
     </div>

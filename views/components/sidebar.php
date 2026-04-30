@@ -61,9 +61,7 @@ $gradient = $roleColors[$role] ?? 'from-slate-900 to-slate-700';
 $roleLabel = ucfirst($role);
 ?>
 <!-- Sidebar -->
-<div x-show="sidebarOpen" x-cloak @click="sidebarOpen = false" class="fixed inset-0 z-30 bg-black/40 md:hidden"></div>
-<aside x-cloak :class="sidebarOpen ? 'translate-x-0' : '-translate-x-full'"
-       class="fixed inset-y-0 left-0 z-40 w-64 transform overflow-hidden bg-gradient-to-b <?= $gradient ?> text-white flex flex-col transition-transform duration-200 md:translate-x-0 md:static md:inset-auto md:block md:shadow-2xl">
+<aside class="fixed left-0 top-0 h-screen w-64 bg-gradient-to-b <?= $gradient ?> text-white flex flex-col z-40 shadow-2xl">
     <!-- Logo -->
     <div class="flex items-center gap-3 px-6 py-5 border-b border-white/10">
         <div class="w-10 h-10 bg-white/20 rounded-xl overflow-hidden">
