@@ -22,27 +22,27 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     if ($formAction === 'create') {
         $result = $adminCtrl->createDepartment(trim($_POST['name'] ?? ''), trim($_POST['description'] ?? ''));
-        setFlash('success', 'Department created.');
+        setFlash('success', 'Trade created.');
         redirect('/admin/departments.php');
     }
 
     if ($formAction === 'delete') {
         $id = (int)($_POST['dept_id'] ?? 0);
-        $db->execute("DELETE FROM departments WHERE id=?", [$id]);
-        (new AuditModel())->log('department_deleted', 'departments', $id);
-        setFlash('success', 'Department deleted.');
+        $db->execute("DELETE FROM trades WHERE id=?", [$id]);
+        (new AuditModel())->log('trade_deleted', 'trades', $id);
+        setFlash('success', 'Trade deleted.');
         redirect('/admin/departments.php');
     }
 }
 
 $departments = $db->fetchAll(
     "SELECT d.*,
-        (SELECT COUNT(*) FROM teachers t WHERE t.department_id=d.id) as teacher_count,
-        (SELECT COUNT(*) FROM courses c WHERE c.department_id=d.id) as course_count
-     FROM departments d ORDER BY d.name"
+        (SELECT COUNT(*) FROM teachers t WHERE t.trade_id=d.id) as teacher_count,
+        (SELECT COUNT(*) FROM courses c WHERE c.trade_id=d.id) as course_count
+     FROM trades d ORDER BY d.name"
 );
 
-$pageTitle  = 'Departments';
+$pageTitle  = 'Trades (RTB)';
 $activePage = '/admin/departments.php';
 $role = 'admin';
 include ROOT_PATH . '/views/components/layout.php';
@@ -50,22 +50,22 @@ include ROOT_PATH . '/views/components/layout.php';
 
 <div class="flex items-center justify-between mb-6">
     <div>
-        <h2 class="text-xl font-bold text-slate-800">Departments</h2>
-        <p class="text-sm text-slate-500 mt-0.5">Organize staff and courses by department</p>
+        <h2 class="text-xl font-bold text-slate-800">Trades (RTB)</h2>
+        <p class="text-sm text-slate-500 mt-0.5">Organize staff and courses by trade - Rwanda TVET Board classification</p>
     </div>
 </div>
 
 <div class="grid grid-cols-1 xl:grid-cols-3 gap-5">
     <!-- Create Form -->
     <div class="bg-white rounded-2xl shadow-sm border border-slate-100 p-5">
-        <h3 class="font-semibold text-slate-800 mb-4">Add Department</h3>
+        <h3 class="font-semibold text-slate-800 mb-4">Add Trade</h3>
         <form method="POST" action="">
             <input type="hidden" name="csrf_token" value="<?= generateCsrfToken() ?>">
             <input type="hidden" name="form_action" value="create">
             <div class="space-y-3">
                 <div>
-                    <label class="block text-sm font-medium text-slate-700 mb-1.5">Name *</label>
-                    <input type="text" name="name" required placeholder="e.g. Mathematics"
+                    <label class="block text-sm font-medium text-slate-700 mb-1.5">Trade Name *</label>
+                    <input type="text" name="name" required placeholder="e.g. Automotive Technology"
                            class="w-full px-3 py-2.5 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500">
                 </div>
                 <div>
@@ -74,7 +74,7 @@ include ROOT_PATH . '/views/components/layout.php';
                               class="w-full px-3 py-2.5 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 resize-none"></textarea>
                 </div>
                 <button type="submit" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white py-2.5 rounded-lg text-sm font-semibold transition-colors">
-                    <i class="fa-solid fa-plus mr-1"></i>Create Department
+                    <i class="fa-solid fa-plus mr-1"></i>Create Trade
                 </button>
             </div>
         </form>
@@ -83,13 +83,13 @@ include ROOT_PATH . '/views/components/layout.php';
     <!-- List -->
     <div class="xl:col-span-2 bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden">
         <div class="px-5 py-4 border-b border-slate-100">
-            <h3 class="font-semibold text-slate-800">All Departments <span class="text-slate-400 font-normal text-sm">(<?= count($departments) ?>)</span></h3>
+            <h3 class="font-semibold text-slate-800">All Trades <span class="text-slate-400 font-normal text-sm">(<?= count($departments) ?>)</span></h3>
         </div>
         <div class="overflow-x-auto">
             <table class="w-full text-sm">
                 <thead class="bg-slate-50 text-slate-500 text-xs uppercase tracking-wider">
                     <tr>
-                        <th class="px-5 py-3 text-left">Name</th>
+                        <th class="px-5 py-3 text-left">Trade Name</th>
                         <th class="px-5 py-3 text-left">Description</th>
                         <th class="px-5 py-3 text-center">Teachers</th>
                         <th class="px-5 py-3 text-center">Courses</th>
@@ -108,7 +108,7 @@ include ROOT_PATH . '/views/components/layout.php';
                                 <input type="hidden" name="csrf_token" value="<?= generateCsrfToken() ?>">
                                 <input type="hidden" name="form_action" value="delete">
                                 <input type="hidden" name="dept_id" value="<?= $d['id'] ?>">
-                                <button type="submit" onclick="return confirm('Delete this department?')"
+                                <button type="submit" onclick="return confirm('Delete this trade?')"
                                         class="p-1.5 text-red-500 hover:bg-red-50 rounded-lg transition-colors" title="Delete">
                                     <i class="fa-solid fa-trash"></i>
                                 </button>
@@ -117,7 +117,7 @@ include ROOT_PATH . '/views/components/layout.php';
                     </tr>
                     <?php endforeach; ?>
                     <?php if (empty($departments)): ?>
-                    <tr><td colspan="5" class="px-5 py-10 text-center text-slate-400">No departments. Create one.</td></tr>
+                    <tr><td colspan="5" class="px-5 py-10 text-center text-slate-400">No trades. Create one.</td></tr>
                     <?php endif; ?>
                 </tbody>
             </table>

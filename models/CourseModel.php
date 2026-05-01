@@ -8,15 +8,15 @@ class CourseModel extends BaseModel {
 
     public function create(array $data): int {
         return $this->db->insert(
-            "INSERT INTO courses (code, name, description, type, credits, department_id) VALUES (?, ?, ?, ?, ?, ?)",
-            [$data['code'], $data['name'], $data['description'] ?? null, $data['type'] ?? 'core', $data['credits'] ?? 3, $data['department_id'] ?? null]
+            "INSERT INTO courses (code, name, description, type, credits, trade_id) VALUES (?, ?, ?, ?, ?, ?)",
+            [$data['code'], $data['name'], $data['description'] ?? null, $data['type'] ?? 'core', $data['credits'] ?? 3, $data['trade_id'] ?? null]
         );
     }
 
     public function update(int $id, array $data): int {
         return $this->db->execute(
-            "UPDATE courses SET code=?, name=?, description=?, type=?, credits=?, department_id=? WHERE id=?",
-            [$data['code'], $data['name'], $data['description'] ?? null, $data['type'], $data['credits'], $data['department_id'] ?? null, $id]
+            "UPDATE courses SET code=?, name=?, description=?, type=?, credits=?, trade_id=? WHERE id=?",
+            [$data['code'], $data['name'], $data['description'] ?? null, $data['type'], $data['credits'], $data['trade_id'] ?? null, $id]
         );
     }
 
@@ -28,10 +28,10 @@ class CourseModel extends BaseModel {
         return (bool)$row;
     }
 
-    public function getAllWithDept(): array {
+    public function getAllWithTrade(): array {
         return $this->db->fetchAll(
-            "SELECT c.*, d.name as department_name FROM courses c
-             LEFT JOIN departments d ON d.id = c.department_id
+            "SELECT c.*, d.name as trade_name FROM courses c
+             LEFT JOIN trades d ON d.id = c.trade_id
              ORDER BY c.name"
         );
     }

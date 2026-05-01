@@ -5,25 +5,34 @@ require_once ROOT_PATH . '/models/UserModel.php';
 require_once ROOT_PATH . '/models/CourseModel.php';
 require_once ROOT_PATH . '/models/ClassModel.php';
 require_once ROOT_PATH . '/models/TeacherModel.php';
+require_once ROOT_PATH . '/models/StudentModel.php';
 require_once ROOT_PATH . '/models/AuditModel.php';
 require_once ROOT_PATH . '/models/NotificationModel.php';
+require_once ROOT_PATH . '/classes/ExcelStudentImporter.php';
+require_once ROOT_PATH . '/models/ReportModel.php';
+require_once ROOT_PATH . '/classes/PDFReportGenerator.php';
+require_once ROOT_PATH . '/classes/ExcelReportGenerator.php';
 
 class AdminController {
     private CourseModel $courseModel;
     private ClassModel $classModel;
     private TeacherModel $teacherModel;
+    private StudentModel $studentModel;
     private UserModel $userModel;
     private AuditModel $auditModel;
     private NotificationModel $notifModel;
+    private ReportModel $reportModel;
     private Database $db;
 
     public function __construct() {
         $this->courseModel  = new CourseModel();
         $this->classModel   = new ClassModel();
         $this->teacherModel = new TeacherModel();
+        $this->studentModel = new StudentModel();
         $this->userModel    = new UserModel();
         $this->auditModel   = new AuditModel();
         $this->notifModel   = new NotificationModel();
+        $this->reportModel  = new ReportModel();
         $this->db           = Database::getInstance();
     }
 
@@ -174,5 +183,264 @@ class AdminController {
             $this->notifModel->send($claim['student_id'], 'Grade Claim Updated', "Your grade claim has been {$status}.", $status === 'resolved' ? 'success' : 'warning');
         }
         return ['success' => true, 'message' => 'Claim updated.'];
+    }
+
+    // ============================================================
+    // STUDENT REGISTRATION & MANAGEMENT
+    // ============================================================
+
+    /**
+     * Register a single student
+     */
+    public function createStudent(array $data): array {
+        $data['username'] = trim($data['username'] ?? '');
+        $data['email'] = trim($data['email'] ?? '');
+
+        if (empty($data['first_name']) || empty($data['last_name'])) {
+            return ['success' => false, 'error' => 'First name and last name are required.'];
+        }
+
+        if (empty($data['username']) || empty($data['email'])) {
+            return ['success' => false, 'error' => 'Username and email are required.'];
+        }
+
+        if ($this->userModel->usernameExists($data['username'])) {
+            return ['success' => false, 'error' => 'Username already exists.'];
+        }
+
+        if ($this->userModel->emailExists($data['email'])) {
+            return ['success' => false, 'error' => 'Email already in use.'];
+        }
+
+        try {
+            // Create user account
+            $password = bin2hex(random_bytes(4));
+            $userId = $this->userModel->createUser([
+                'username' => $data['username'],
+                'email'    => $data['email'],
+                'password' => $password,
+                'role'     => 'student',
+            ]);
+
+            // Generate student ID
+            $studentId = $this->studentModel->generateStudentId();
+
+            // Create student record
+            $studentData = [
+                'user_id' => $userId,
+                'student_id' => $studentId,
+                'first_name' => $data['first_name'],
+                'last_name' => $data['last_name'],
+                'gender' => $data['gender'] ?? null,
+                'date_of_birth' => $data['date_of_birth'] ?? null,
+                'phone' => $data['phone'] ?? null,
+                'address' => $data['address'] ?? null,
+                'emergency_contact' => $data['emergency_contact'] ?? null,
+            ];
+
+            $sId = $this->studentModel->create($studentData);
+
+            // Enroll in class if provided
+            if (!empty($data['class_id'])) {
+                $currentYear = $this->db->fetchOne(
+                    "SELECT id FROM academic_years WHERE is_current = 1"
+                );
+
+                if ($currentYear) {
+                    $this->db->insert(
+                        "INSERT INTO enrollments (student_id, class_id, academic_year_id, enrollment_date)
+                         VALUES (?, ?, ?, ?)",
+                        [$sId, $data['class_id'], $currentYear['id'], date('Y-m-d')]
+                    );
+                }
+            }
+
+            // Send notification
+            $this->notifModel->send($userId, 'Student Account Created', 
+                "Welcome! Username: {$data['username']}, Password: {$password}", 'success');
+            
+            $this->auditModel->log('student_created', 'students', $sId, null, ['student_id' => $studentId]);
+
+            return [
+                'success' => true,
+                'student_id' => $studentId,
+                'password' => $password,
+                'message' => 'Student registered successfully.'
+            ];
+        } catch (Exception $e) {
+            return ['success' => false, 'error' => 'Error creating student: ' . $e->getMessage()];
+        }
+    }
+
+    /**
+     * Bulk import students from CSV file
+     */
+    public function importStudentsFromCSV(string $filePath): array {
+        $importer = new ExcelStudentImporter();
+        return $importer->importFromCSV($filePath);
+    }
+
+    /**
+     * Generate student import template
+     */
+    public function getStudentImportTemplate(): string {
+        return ExcelStudentImporter::getTemplateCSV();
+    }
+
+    // ============================================================
+    // USER ROLE MANAGEMENT
+    // ============================================================
+
+    /**
+     * Get all users with their roles
+     */
+    public function getAllUsers(): array {
+        return $this->db->fetchAll(
+            "SELECT u.*, 
+                    CASE 
+                        WHEN u.role = 'teacher' THEN t.first_name || ' ' || t.last_name
+                        WHEN u.role = 'student' THEN s.first_name || ' ' || s.last_name
+                        ELSE u.username
+                    END as full_name
+             FROM users u
+             LEFT JOIN teachers t ON u.id = t.user_id
+             LEFT JOIN students s ON u.id = s.user_id
+             ORDER BY u.created_at DESC"
+        );
+    }
+
+    /**
+     * Update user role
+     */
+    public function updateUserRole(int $userId, string $newRole): array {
+        $validRoles = ['admin', 'secretary', 'teacher', 'student', 'parent', 'discipline_master'];
+        
+        if (!in_array($newRole, $validRoles)) {
+            return ['success' => false, 'error' => 'Invalid role.'];
+        }
+
+        $user = $this->userModel->findById($userId);
+        if (!$user) {
+            return ['success' => false, 'error' => 'User not found.'];
+        }
+
+        $this->db->execute(
+            "UPDATE users SET role = ? WHERE id = ?",
+            [$newRole, $userId]
+        );
+
+        $this->auditModel->log('user_role_updated', 'users', $userId, 
+            ['role' => $user['role']], ['role' => $newRole]);
+
+        return ['success' => true, 'message' => 'User role updated successfully.'];
+    }
+
+    /**
+     * Create discipline master account
+     */
+    public function createDisciplineMaster(array $data): array {
+        $data['username'] = trim($data['username'] ?? '');
+        $data['email'] = trim($data['email'] ?? '');
+
+        if (empty($data['username']) || empty($data['email'])) {
+            return ['success' => false, 'error' => 'Username and email are required.'];
+        }
+
+        if ($this->userModel->usernameExists($data['username'])) {
+            return ['success' => false, 'error' => 'Username already exists.'];
+        }
+
+        if ($this->userModel->emailExists($data['email'])) {
+            return ['success' => false, 'error' => 'Email already in use.'];
+        }
+
+        try {
+            $password = bin2hex(random_bytes(4));
+            $userId = $this->userModel->createUser([
+                'username' => $data['username'],
+                'email'    => $data['email'],
+                'password' => $password,
+                'role'     => 'discipline_master',
+            ]);
+
+            $this->notifModel->send($userId, 'Discipline Master Account Created',
+                "Welcome! Username: {$data['username']}, Password: {$password}", 'success');
+
+            $this->auditModel->log('discipline_master_created', 'users', $userId, null, $data);
+
+            return [
+                'success' => true,
+                'user_id' => $userId,
+                'password' => $password,
+                'message' => 'Discipline Master account created successfully.'
+            ];
+        } catch (Exception $e) {
+            return ['success' => false, 'error' => 'Error creating account: ' . $e->getMessage()];
+        }
+    }
+
+    // ============================================================
+    // REPORT GENERATION
+    // ============================================================
+
+    /**
+     * Generate student report in PDF format
+     */
+    public function generateStudentReportPDF(int $studentId, int $academicYearId, string $format = 'pdf'): void {
+        $reportData = $this->reportModel->getStudentTermReport($studentId, $academicYearId);
+        
+        if (!$reportData) {
+            http_response_code(404);
+            die(json_encode(['error' => 'Student or report data not found.']));
+        }
+
+        $student = $reportData['student'];
+        $fileName = strtolower(str_replace(' ', '_', $student['first_name'] . '_' . $student['student_id']));
+
+        if ($format === 'pdf') {
+            $generator = new PDFReportGenerator($reportData, $fileName);
+        } else {
+            $generator = new ExcelReportGenerator($reportData, $fileName);
+        }
+
+        $generator->generate();
+    }
+
+    /**
+     * Generate class report
+     */
+    public function generateClassReport(int $classId, int $academicYearId, string $format = 'pdf'): void {
+        $reportData = $this->reportModel->getClassReport($classId, $academicYearId);
+        
+        if (empty($reportData['students'])) {
+            http_response_code(404);
+            die(json_encode(['error' => 'Class not found or has no students.']));
+        }
+
+        $class = $reportData['class'];
+        $fileName = strtolower(str_replace(' ', '_', $class['name'] . '_report'));
+
+        if ($format === 'pdf') {
+            $generator = new PDFReportGenerator($reportData, $fileName);
+        } else {
+            $generator = new ExcelReportGenerator($reportData, $fileName);
+        }
+
+        $generator->generate();
+    }
+
+    /**
+     * Update student record
+     */
+    public function updateStudent(int $studentId, array $data): array {
+        $student = $this->studentModel->findById($studentId);
+        if (!$student) {
+            return ['success' => false, 'error' => 'Student not found.'];
+        }
+
+        $this->studentModel->update($studentId, $data);
+        $this->auditModel->log('student_updated', 'students', $studentId, $student, $data);
+
+        return ['success' => true, 'message' => 'Student updated successfully.'];
     }
 }

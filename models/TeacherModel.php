@@ -12,12 +12,12 @@ class TeacherModel extends BaseModel {
 
     public function create(array $data): int {
         return $this->db->insert(
-            "INSERT INTO teachers (user_id, employee_id, first_name, last_name, gender, date_of_birth, phone, address, department_id, qualification, hire_date)
+            "INSERT INTO teachers (user_id, employee_id, first_name, last_name, gender, date_of_birth, phone, address, trade_id, qualification, hire_date)
              VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
             [
                 $data['user_id'], $data['employee_id'], $data['first_name'], $data['last_name'],
                 $data['gender'], $data['date_of_birth'] ?? null, $data['phone'] ?? null,
-                $data['address'] ?? null, $data['department_id'] ?? null,
+                $data['address'] ?? null, $data['trade_id'] ?? null,
                 $data['qualification'] ?? null, $data['hire_date'] ?? date('Y-m-d')
             ]
         );
@@ -28,12 +28,12 @@ class TeacherModel extends BaseModel {
         return 'EMP' . str_pad($count + 1, 4, '0', STR_PAD_LEFT);
     }
 
-    public function getAllWithDept(): array {
+    public function getAllWithTrade(): array {
         return $this->db->fetchAll(
-            "SELECT t.*, u.username, u.email, u.is_active, d.name as department_name
+            "SELECT t.*, u.username, u.email, u.is_active, d.name as trade_name
              FROM teachers t
              JOIN users u ON u.id = t.user_id
-             LEFT JOIN departments d ON d.id = t.department_id
+             LEFT JOIN trades d ON d.id = t.trade_id
              ORDER BY t.last_name, t.first_name"
         );
     }
@@ -71,10 +71,10 @@ class TeacherModel extends BaseModel {
     public function update(int $id, array $data): int {
         return $this->db->execute(
             "UPDATE teachers SET first_name=?, last_name=?, gender=?, phone=?,
-             address=?, department_id=?, qualification=? WHERE id=?",
+             address=?, trade_id=?, qualification=? WHERE id=?",
             [
                 $data['first_name'], $data['last_name'], $data['gender'], $data['phone'] ?? null,
-                $data['address'] ?? null, $data['department_id'] ?? null,
+                $data['address'] ?? null, $data['trade_id'] ?? null,
                 $data['qualification'] ?? null, $id
             ]
         );

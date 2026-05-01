@@ -23,6 +23,25 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $result = $adminCtrl->toggleUserStatus((int)$_POST['user_id']);
         setFlash('success', 'User status updated.');
     }
+    if ($formAction === 'update_role') {
+        $result = $adminCtrl->updateUserRole((int)$_POST['user_id'], $_POST['role']);
+        if ($result['success']) {
+            setFlash('success', $result['message']);
+        } else {
+            setFlash('danger', $result['error']);
+        }
+    }
+    if ($formAction === 'create_discipline') {
+        $result = $adminCtrl->createDisciplineMaster([
+            'username' => $_POST['username'] ?? '',
+            'email' => $_POST['email'] ?? ''
+        ]);
+        if ($result['success']) {
+            setFlash('success', $result['message'] . ' Temporary Password: ' . $result['password']);
+        } else {
+            setFlash('danger', $result['error']);
+        }
+    }
     if ($formAction === 'reset_password') {
         $userId = (int)($_POST['user_id'] ?? 0);
         $user = $userModel->findById($userId);
@@ -56,13 +75,19 @@ include ROOT_PATH . '/views/components/layout.php';
         <h2 class="text-xl font-bold text-slate-800">User Management</h2>
         <p class="text-sm text-slate-500 mt-0.5">Manage all system accounts</p>
     </div>
-    <form method="GET" action="" class="flex gap-2">
-        <input type="text" name="q" value="<?= e($search) ?>" placeholder="Search users…"
-               class="px-3 py-2.5 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 w-52">
-        <button type="submit" class="bg-indigo-600 text-white px-4 py-2.5 rounded-lg text-sm font-semibold">
-            <i class="fa-solid fa-magnifying-glass"></i>
+    <div class="flex gap-2">
+        <button class="bg-amber-600 text-white px-4 py-2.5 rounded-lg text-sm font-semibold" 
+                onclick="document.getElementById('disciplineModal').showModal()">
+            <i class="fa-solid fa-user-tie"></i> Discipline Master
         </button>
-    </form>
+        <form method="GET" action="" class="flex gap-2">
+            <input type="text" name="q" value="<?= e($search) ?>" placeholder="Search users…"
+                   class="px-3 py-2.5 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 w-52">
+            <button type="submit" class="bg-indigo-600 text-white px-4 py-2.5 rounded-lg text-sm font-semibold">
+                <i class="fa-solid fa-magnifying-glass"></i>
+            </button>
+        </form>
+    </div>
 </div>
 
 <div class="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden">
@@ -107,6 +132,11 @@ include ROOT_PATH . '/views/components/layout.php';
                     <td class="px-5 py-3 text-slate-400 whitespace-nowrap"><?= formatDate($u['created_at']) ?></td>
                     <td class="px-5 py-3">
                         <div class="flex gap-1">
+                            <button type="button" class="p-1.5 text-amber-500 hover:bg-amber-50 rounded-lg transition-colors" 
+                                    title="Update Role"
+                                    onclick="openRoleModal(<?= $u['id'] ?>, '<?= e($u['username']) ?>', '<?= $u['role'] ?>')">
+                                <i class="fa-solid fa-person-military-pointing"></i>
+                            </button>
                             <?php if ($u['id'] != currentUserId()): ?>
                             <form method="POST" action="" class="inline">
                                 <input type="hidden" name="csrf_token" value="<?= generateCsrfToken() ?>">
@@ -139,4 +169,63 @@ include ROOT_PATH . '/views/components/layout.php';
     </div>
 </div>
 
-<?php include ROOT_PATH . '/views/components/footer.php'; ?>
+<!-- Role Update Modal -->
+<dialog id="roleModal" class="p-6 rounded-xl shadow-xl backdrop:bg-black/50">
+    <div class="max-w-sm">
+        <h3 class="text-lg font-bold mb-4">Update User Role</h3>
+        <p class="text-sm text-slate-600 mb-4">Updating: <span id="roleModalUsername" class="font-semibold"></span></p>
+        <form method="POST" action="?form_action=update_role">
+            <input type="hidden" name="csrf_token" value="<?= generateCsrfToken() ?>">
+            <input type="hidden" name="form_action" value="update_role">
+            <input type="hidden" name="user_id" id="roleModalUserId">
+            <div class="mb-4">
+                <label class="block text-sm font-semibold mb-2">Select Role</label>
+                <select name="role" id="roleModalSelect" class="w-full px-3 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500" required>
+                    <option value="">-- Select Role --</option>
+                    <option value="admin">Administrator</option>
+                    <option value="secretary">Secretary</option>
+                    <option value="teacher">Teacher</option>
+                    <option value="student">Student</option>
+                    <option value="parent">Parent</option>
+                    <option value="discipline_master">Discipline Master</option>
+                </select>
+            </div>
+            <div class="flex gap-2 justify-end">
+                <button type="button" class="px-4 py-2 rounded-lg border border-slate-300 text-slate-600 hover:bg-slate-50" onclick="document.getElementById('roleModal').close()">Cancel</button>
+                <button type="submit" class="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700">Update</button>
+            </div>
+        </form>
+    </div>
+</dialog>
+
+<!-- Discipline Master Modal -->
+<dialog id="disciplineModal" class="p-6 rounded-xl shadow-xl backdrop:bg-black/50">
+    <div class="max-w-sm">
+        <h3 class="text-lg font-bold mb-4">Create Discipline Master</h3>
+        <form method="POST" action="">
+            <input type="hidden" name="csrf_token" value="<?= generateCsrfToken() ?>">
+            <input type="hidden" name="form_action" value="create_discipline">
+            <div class="mb-4">
+                <label class="block text-sm font-semibold mb-2">Username *</label>
+                <input type="text" name="username" class="w-full px-3 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500" required>
+            </div>
+            <div class="mb-4">
+                <label class="block text-sm font-semibold mb-2">Email *</label>
+                <input type="email" name="email" class="w-full px-3 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500" required>
+            </div>
+            <div class="flex gap-2 justify-end">
+                <button type="button" class="px-4 py-2 rounded-lg border border-slate-300 text-slate-600 hover:bg-slate-50" onclick="document.getElementById('disciplineModal').close()">Cancel</button>
+                <button type="submit" class="px-4 py-2 bg-amber-600 text-white rounded-lg hover:bg-amber-700">Create</button>
+            </div>
+        </form>
+    </div>
+</dialog>
+
+<script>
+function openRoleModal(userId, username, role) {
+    document.getElementById('roleModalUserId').value = userId;
+    document.getElementById('roleModalUsername').textContent = username;
+    document.getElementById('roleModalSelect').value = role;
+    document.getElementById('roleModal').showModal();
+}
+</script>
