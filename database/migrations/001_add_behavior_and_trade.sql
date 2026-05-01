@@ -3,11 +3,11 @@
 -- ============================================================
 -- This migration adds behavior tracking and renames departments to trades (RTB terminology)
 
--- 1. Add behavior field to marks table
-ALTER TABLE marks ADD COLUMN behavior_grade VARCHAR(5) DEFAULT NULL AFTER letter_grade;
-ALTER TABLE marks ADD COLUMN behavior_remarks TEXT DEFAULT NULL AFTER remarks;
+-- 1. Add behavior field to marks table (if not already present)
+ALTER TABLE marks ADD COLUMN IF NOT EXISTS behavior_grade VARCHAR(5) DEFAULT NULL AFTER letter_grade;
+ALTER TABLE marks ADD COLUMN IF NOT EXISTS behavior_remarks TEXT DEFAULT NULL AFTER remarks;
 
--- 2. Create behavior tracking table
+-- 2. Create behavior tracking table (if not already present)
 CREATE TABLE IF NOT EXISTS behavior_records (
     id INT AUTO_INCREMENT PRIMARY KEY,
     student_id INT NOT NULL,
@@ -27,18 +27,34 @@ CREATE TABLE IF NOT EXISTS behavior_records (
     FOREIGN KEY (recorded_by) REFERENCES users(id)
 );
 
--- 3. Rename departments table to trades
-RENAME TABLE departments TO trades;
+-- 3. Rename departments table to trades (if departments still exists)
+RENAME TABLE IF EXISTS departments TO trades;
 
--- 4. Update foreign key in courses table
-ALTER TABLE courses CHANGE COLUMN department_id trade_id INT;
-ALTER TABLE courses DROP FOREIGN KEY courses_ibfk_2;
-ALTER TABLE courses ADD CONSTRAINT courses_ibfk_2 FOREIGN KEY (trade_id) REFERENCES trades(id);
+-- 4. Update courses table
+-- Drop old foreign keys if they exist
+ALTER TABLE courses DROP FOREIGN KEY IF EXISTS courses_ibfk_2;
+ALTER TABLE courses DROP FOREIGN KEY IF EXISTS courses_ibfk_3;
+ALTER TABLE courses DROP FOREIGN KEY IF EXISTS fk_courses_trade_id;
 
--- 5. Update foreign key in teachers table
-ALTER TABLE teachers CHANGE COLUMN department_id trade_id INT;
-ALTER TABLE teachers DROP FOREIGN KEY teachers_ibfk_2;
-ALTER TABLE teachers ADD CONSTRAINT teachers_ibfk_2 FOREIGN KEY (trade_id) REFERENCES trades(id);
+-- Rename column if it still has old name
+ALTER TABLE courses CHANGE COLUMN IF EXISTS department_id trade_id INT NULL;
+
+-- Add new foreign key - will fail silently if constraint already exists
+-- (You may need to manually add this if it fails)
+ALTER TABLE courses ADD CONSTRAINT fk_courses_trade_id FOREIGN KEY (trade_id) REFERENCES trades(id) ON DELETE SET NULL;
+
+-- 5. Update teachers table  
+-- Drop old foreign keys if they exist
+ALTER TABLE teachers DROP FOREIGN KEY IF EXISTS teachers_ibfk_2;
+ALTER TABLE teachers DROP FOREIGN KEY IF EXISTS teachers_ibfk_3;
+ALTER TABLE teachers DROP FOREIGN KEY IF EXISTS fk_teachers_trade_id;
+
+-- Rename column if it still has old name
+ALTER TABLE teachers CHANGE COLUMN IF EXISTS department_id trade_id INT NULL;
+
+-- Add new foreign key - will fail silently if constraint already exists
+-- (You may need to manually add this if it fails)
+ALTER TABLE teachers ADD CONSTRAINT fk_teachers_trade_id FOREIGN KEY (trade_id) REFERENCES trades(id) ON DELETE SET NULL;
 
 -- 6. Add role field to users table for extended roles
 ALTER TABLE users MODIFY COLUMN role ENUM('admin','secretary','teacher','student','parent','discipline_master') NOT NULL;
@@ -59,6 +75,12 @@ CREATE TABLE IF NOT EXISTS file_uploads (
 );
 
 -- ============================================================
--- DATA MIGRATION: Rename existing department names to trades (if any)
+-- NOTES
 -- ============================================================
--- This is handled separately to avoid conflicts
+-- If you get FK constraint errors, the constraint may already exist.
+-- In that case, you can safely ignore the error and continue.
+--
+-- To verify completion, run these queries:
+-- SELECT COLUMN_NAME FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_NAME='marks' AND COLUMN_NAME IN ('behavior_grade','behavior_remarks');
+-- SELECT TABLE_NAME FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_NAME='behavior_records';
+-- SELECT TABLE_NAME FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_NAME='trades';
