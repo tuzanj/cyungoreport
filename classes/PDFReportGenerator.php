@@ -3,6 +3,8 @@
 
 require_once ROOT_PATH . '/classes/ReportGenerator.php';
 
+use Dompdf\Dompdf;
+
 /**
  * PDF Report Generator
  * Generates learner assessment reports in PDF format
@@ -32,7 +34,7 @@ class PDFReportGenerator extends ReportGenerator {
      * Generate PDF using DOMPDF
      */
     private function generateWithDOMPDF(): void {
-        $dompdf = new \\Dompdf\\Dompdf();
+        $dompdf = new Dompdf();
         $dompdf->loadHtml($this->htmlContent);
         $dompdf->setPaper('A4', 'portrait');
         $dompdf->render();
