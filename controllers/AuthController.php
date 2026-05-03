@@ -71,6 +71,7 @@ class AuthController {
 
             $this->userModel->resetFailedAttempts($user['id']);
             $this->auditModel->log('login_success', 'users', $user['id']);
+            session_write_close();
             $this->redirectByRole($user['role']);
         }
 
@@ -91,14 +92,6 @@ class AuthController {
             setFlash('danger', "Invalid credentials. {$remaining} attempt(s) remaining.");
         }
         redirect('/index.php');
-
-        $_SESSION['user_id']  = $user['id'];
-        $_SESSION['username'] = $user['username'];
-        $_SESSION['role']     = $user['role'];
-        $_SESSION['login_time'] = time();
-
-        $this->auditModel->log('login_success', 'users', $user['id']);
-        $this->redirectByRole($user['role']);
     }
 
     public function logout(): void {

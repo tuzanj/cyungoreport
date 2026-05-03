@@ -8,7 +8,10 @@ define('APP_VERSION', '1.0.0');
 
 if (!defined('BASE_URL')) {
     if (!empty($_SERVER['HTTP_HOST'])) {
-        $scheme = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') || ($_SERVER['SERVER_PORT'] ?? '') === '443' ? 'https' : 'http';
+        $isHttps = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off')
+            || ($_SERVER['SERVER_PORT'] ?? '') === '443'
+            || strtolower($_SERVER['HTTP_X_FORWARDED_PROTO'] ?? '') === 'https';
+        $scheme = $isHttps ? 'https' : 'http';
         define('BASE_URL', $scheme . '://' . $_SERVER['HTTP_HOST'] . '/report');
     } else {
         define('BASE_URL', APP_ADDRESS);
@@ -43,7 +46,9 @@ define('ROLE_DISCIPLINE_MASTER', 'discipline_master');
 // Start secure session
 function startSecureSession(): void {
     if (session_status() === PHP_SESSION_NONE) {
-        $secure = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') || ($_SERVER['SERVER_PORT'] ?? '') === '443';
+        $secure = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off')
+            || ($_SERVER['SERVER_PORT'] ?? '') === '443'
+            || strtolower($_SERVER['HTTP_X_FORWARDED_PROTO'] ?? '') === 'https';
         ini_set('session.cookie_httponly', 1);
         ini_set('session.use_strict_mode', 1);
         session_set_cookie_params([
