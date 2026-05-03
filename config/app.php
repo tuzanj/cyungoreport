@@ -9,7 +9,9 @@ define('APP_VERSION', '1.0.0');
 if (!defined('BASE_URL')) {
     if (!empty($_SERVER['HTTP_HOST'])) {
         $scheme = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') || ($_SERVER['SERVER_PORT'] ?? '') === '443' ? 'https' : 'http';
-        $basePath = rtrim(dirname($_SERVER['SCRIPT_NAME']), '/\\');
+        $scriptName = str_replace('\\', '/', $_SERVER['SCRIPT_NAME'] ?? '');
+        $reportPos = strpos($scriptName, '/report/');
+        $basePath = $reportPos !== false ? substr($scriptName, 0, $reportPos + strlen('/report')) : rtrim(dirname($scriptName), '/\\');
         define('BASE_URL', $scheme . '://' . $_SERVER['HTTP_HOST'] . $basePath);
     } else {
         define('BASE_URL', 'http://cyungotss.ac.rw/report');
