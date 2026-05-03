@@ -2,9 +2,9 @@
 // config/database.php - Database connection singleton
 
 define('DB_HOST', 'localhost');
-define('DB_NAME', 'school_db');
-define('DB_USER', 'root');
-define('DB_PASS', '');
+define('DB_NAME', 'niyawwse_report');
+define('DB_USER', 'niyawwse_cyungots');
+define('DB_PASS', 'ckqjt(wUC(pC');
 define('DB_CHARSET', 'utf8mb4');
 
 class Database {
