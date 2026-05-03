@@ -325,7 +325,7 @@ INSERT INTO academic_years (name, start_date, end_date, is_current) VALUES
 ('2024-2025', '2024-09-01', '2025-06-30', 1);
 
 INSERT INTO users (username, email, password_hash, role) VALUES
-('admin', 'admin@school.edu', '$2y$12$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 'admin'),
-('secretary', 'secretary@school.edu', '$2y$12$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 'secretary');
+('admin', 'admin@school.edu', '$2y$12$D92.fujYzbHJzUegfpl/1eH2ntiKjHyzOLh7JQKNF5W0DE4SNkjJi', 'admin'),
+('secretary', 'secretary@school.edu', '$2y$12$D92.fujYzbHJzUegfpl/1eH2ntiKjHyzOLh7JQKNF5W0DE4SNkjJi', 'secretary');
 
--- NOTE: Default password for all seeded users is: password
+-- NOTE: Default password for all seeded users is: Admin@123

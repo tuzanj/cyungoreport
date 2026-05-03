@@ -7,7 +7,12 @@ define('APP_ADDRESS', 'http://cyungotss.ac.rw/report');
 define('APP_VERSION', '1.0.0');
 
 if (!defined('BASE_URL')) {
-    define('BASE_URL', APP_ADDRESS);
+    if (!empty($_SERVER['HTTP_HOST'])) {
+        $scheme = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') || ($_SERVER['SERVER_PORT'] ?? '') === '443' ? 'https' : 'http';
+        define('BASE_URL', $scheme . '://' . $_SERVER['HTTP_HOST'] . '/report');
+    } else {
+        define('BASE_URL', APP_ADDRESS);
+    }
 }
 
 if (!defined('ROOT_PATH')) {
@@ -38,8 +43,17 @@ define('ROLE_DISCIPLINE_MASTER', 'discipline_master');
 // Start secure session
 function startSecureSession(): void {
     if (session_status() === PHP_SESSION_NONE) {
+        $secure = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') || ($_SERVER['SERVER_PORT'] ?? '') === '443';
         ini_set('session.cookie_httponly', 1);
         ini_set('session.use_strict_mode', 1);
+        session_set_cookie_params([
+            'lifetime' => 0,
+            'path' => '/report',
+            'domain' => '',
+            'secure' => $secure,
+            'httponly' => true,
+            'samesite' => 'Lax',
+        ]);
         session_start();
     }
 }

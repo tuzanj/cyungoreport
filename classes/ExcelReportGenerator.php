@@ -29,7 +29,7 @@ class ExcelReportGenerator extends ReportGenerator {
      * Generate Excel using PhpSpreadsheet
      */
     private function generateWithPhpSpreadsheet(): void {
-        $spreadsheet = new \\PhpOffice\\PhpSpreadsheet\\Spreadsheet();
+        $spreadsheet = new \PhpOffice\PhpSpreadsheet\Spreadsheet();
         $sheet = $spreadsheet->getActiveSheet();
 
         // Set title
@@ -107,10 +107,10 @@ class ExcelReportGenerator extends ReportGenerator {
 
         // Style header row
         $headerStyle = $sheet->getStyle('A' . $row . ':J' . $row);
-        $headerStyle->getFont()->setBold(true)->setColor(new \\PhpOffice\\PhpSpreadsheet\\Style\\Color('FFFFFF'));
-        $headerStyle->getFill()->setFillType(\\PhpOffice\\PhpSpreadsheet\\Style\\Fill::FILL_SOLID)
+        $headerStyle->getFont()->setBold(true)->setColor(new \PhpOffice\PhpSpreadsheet\Style\Color('FFFFFF'));
+        $headerStyle->getFill()->setFillType(\PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID)
             ->getStartColor()->setARGB('FF366092');
-        $headerStyle->getAlignment()->setHorizontal(\\PhpOffice\\PhpSpreadsheet\\Style\\Alignment::HORIZONTAL_CENTER);
+        $headerStyle->getAlignment()->setHorizontal(\PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_CENTER);
 
         $row++;
 
@@ -130,10 +130,10 @@ class ExcelReportGenerator extends ReportGenerator {
 
             // Style data rows
             if ($mark['status'] === 'PASS') {
-                $sheet->getStyle('I' . $row)->getFill()->setFillType(\\PhpOffice\\PhpSpreadsheet\\Style\\Fill::FILL_SOLID)
+                $sheet->getStyle('I' . $row)->getFill()->setFillType(\PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID)
                     ->getStartColor()->setARGB('FFCCFFCC');
             } else {
-                $sheet->getStyle('I' . $row)->getFill()->setFillType(\\PhpOffice\\PhpSpreadsheet\\Style\\Fill::FILL_SOLID)
+                $sheet->getStyle('I' . $row)->getFill()->setFillType(\PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID)
                     ->getStartColor()->setARGB('FFFFCCCC');
             }
 
@@ -177,7 +177,7 @@ class ExcelReportGenerator extends ReportGenerator {
         $filename = $this->getFileName('xlsx');
         $this->setDownloadHeaders('application/vnd.openxmlformats-officedocument.spreadsheetml.sheet', $filename);
 
-        $writer = new \\PhpOffice\\PhpSpreadsheet\\Writer\\Xlsx($spreadsheet);
+        $writer = new \PhpOffice\PhpSpreadsheet\Writer\Xlsx($spreadsheet);
         $writer->save('php://output');
     }
 
