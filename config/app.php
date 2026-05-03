@@ -39,6 +39,7 @@ define('ROLE_SECRETARY', 'secretary');
 define('ROLE_TEACHER', 'teacher');
 define('ROLE_STUDENT', 'student');
 define('ROLE_PARENT', 'parent');
+define('ROLE_DISCIPLINE_MASTER', 'discipline_master');
 
 // Start secure session
 function startSecureSession(): void {
