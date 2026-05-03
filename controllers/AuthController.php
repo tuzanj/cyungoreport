@@ -61,13 +61,7 @@ class AuthController {
                 $this->userModel->resetFailedAttempts($user['id']);
             }
 
-            startSecureSession();
-            session_regenerate_id(true);
-
-            $_SESSION['user_id']  = $user['id'];
-            $_SESSION['username'] = $user['username'];
-            $_SESSION['role']     = $user['role'];
-            $_SESSION['login_time'] = time();
+            createAuthenticatedSession($user);
 
             $this->userModel->resetFailedAttempts($user['id']);
             $this->auditModel->log('login_success', 'users', $user['id']);
@@ -98,9 +92,7 @@ class AuthController {
         if (isLoggedIn()) {
             $this->auditModel->log('logout', 'users', currentUserId());
         }
-        startSecureSession();
-        session_unset();
-        session_destroy();
+        destroySecureSession();
         redirect('/index.php?msg=logged_out');
     }
 

@@ -9,14 +9,9 @@ require_once ROOT_PATH . '/config/database.php';
 startSecureSession();
 
 // Session timeout check
-if (isLoggedIn() && isset($_SESSION['login_time'])) {
-    if ((time() - $_SESSION['login_time']) > SESSION_LIFETIME) {
-        session_unset();
-        session_destroy();
-        header('Location: ' . BASE_URL . '/index.php?msg=session_expired');
-        exit;
-    }
-    $_SESSION['login_time'] = time(); // rolling refresh
+if (!empty($_SESSION['user_id']) && !isLoggedIn()) {
+    header('Location: ' . BASE_URL . '/index.php?msg=session_expired');
+    exit;
 }
 
 $action = $_GET['action'] ?? '';

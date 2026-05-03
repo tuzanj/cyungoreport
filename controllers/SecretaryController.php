@@ -93,38 +93,82 @@ class SecretaryController {
     }
 
     public function linkParent(int $studentId, array $parentData): array {
-        // Check if user account needed
-        $parentUserId = (int)($parentData['existing_user_id'] ?? 0);
+        try {
+            if ($studentId <= 0 || !$this->studentModel->findById($studentId)) {
+                return ['success' => false, 'error' => 'Please select a valid student.'];
+            }
 
-        if (!$parentUserId) {
+            $firstName = trim($parentData['first_name'] ?? '');
+            $lastName = trim($parentData['last_name'] ?? '');
             $email = trim($parentData['email'] ?? '');
-            $password = bin2hex(random_bytes(4));
-            $username = strtolower($parentData['first_name'] . '.' . $parentData['last_name'] . rand(10,99));
 
-            $parentUserId = $this->userModel->createUser([
-                'username' => $username,
-                'email'    => $email,
-                'password' => $password,
-                'role'     => ROLE_PARENT,
-            ]);
+            if ($firstName === '' || $lastName === '') {
+                return ['success' => false, 'error' => 'Parent first name and last name are required.'];
+            }
 
-            $this->parentModel->create(array_merge($parentData, ['user_id' => $parentUserId]));
-            $parentDbId = $this->parentModel->findByUserId($parentUserId)['id'];
+            if ($email === '' || !filter_var($email, FILTER_VALIDATE_EMAIL)) {
+                return ['success' => false, 'error' => 'A valid parent email is required.'];
+            }
 
-            $this->notifModel->send($parentUserId, 'Parent Account Created', "Username: {$username}, Password: {$password}", 'success');
-        } else {
-            $parentRecord = $this->parentModel->findByUserId($parentUserId);
-            $parentDbId = $parentRecord ? $parentRecord['id'] : null;
+            $parentUserId = (int)($parentData['existing_user_id'] ?? 0);
+            $password = null;
+            $username = null;
+
+            if (!$parentUserId) {
+                $existingUser = $this->userModel->findByEmail($email);
+
+                if ($existingUser) {
+                    if ($existingUser['role'] !== ROLE_PARENT) {
+                        return ['success' => false, 'error' => 'This email is already used by another account type.'];
+                    }
+                    $parentUserId = (int)$existingUser['id'];
+                } else {
+                    $password = bin2hex(random_bytes(4));
+                    $baseUsername = strtolower(preg_replace('/[^a-z0-9]+/i', '.', $firstName . '.' . $lastName));
+                    $baseUsername = trim($baseUsername, '.') ?: 'parent';
+                    do {
+                        $username = $baseUsername . rand(10, 9999);
+                    } while ($this->userModel->usernameExists($username));
+
+                    $parentUserId = $this->userModel->createUser([
+                        'username' => $username,
+                        'email'    => $email,
+                        'password' => $password,
+                        'role'     => ROLE_PARENT,
+                    ]);
+                }
+
+                $parentRecord = $this->parentModel->findByUserId($parentUserId);
+                if (!$parentRecord) {
+                    $this->parentModel->create(array_merge($parentData, [
+                        'user_id' => $parentUserId,
+                        'first_name' => $firstName,
+                        'last_name' => $lastName,
+                        'email' => $email,
+                    ]));
+                    $parentRecord = $this->parentModel->findByUserId($parentUserId);
+                }
+
+                if ($password !== null && $username !== null) {
+                    $this->notifModel->send($parentUserId, 'Parent Account Created', "Username: {$username}, Password: {$password}", 'success');
+                }
+            } else {
+                $parentRecord = $this->parentModel->findByUserId($parentUserId);
+            }
+
+            $parentDbId = $parentRecord ? (int)$parentRecord['id'] : 0;
+            if (!$parentDbId) {
+                return ['success' => false, 'error' => 'Parent record not found.'];
+            }
+
+            $this->parentModel->linkStudent($parentDbId, $studentId, true);
+            $this->auditModel->log('parent_linked', 'parent_student', $studentId);
+
+            return ['success' => true, 'message' => 'Parent linked successfully.'];
+        } catch (Throwable $e) {
+            error_log("Parent Link Error: " . $e->getMessage());
+            return ['success' => false, 'error' => 'Unable to link parent. Please verify the parent details and try again.'];
         }
-
-        if (!$parentDbId) {
-            return ['success' => false, 'error' => 'Parent record not found.'];
-        }
-
-        $this->parentModel->linkStudent($parentDbId, $studentId, true);
-        $this->auditModel->log('parent_linked', 'parent_student', $studentId);
-
-        return ['success' => true, 'message' => 'Parent linked successfully.'];
     }
 
     private function validateStudentData(array $data): array {
