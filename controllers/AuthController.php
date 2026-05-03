@@ -39,10 +39,10 @@ class AuthController {
             redirect('/index.php');
         }
 
-        $user = $this->userModel->findByUsername($username);
+        $user = $this->userModel->findByUsernameOrEmail($username);
 
         if (!$user) {
-            $this->auditModel->log('login_failed', 'users', null, null, ['username' => $username, 'reason' => 'not_found']);
+            $this->auditModel->log('login_failed', 'users', null, null, ['username_or_email' => $username, 'reason' => 'not_found']);
             setFlash('danger', 'Invalid credentials.');
             redirect('/index.php');
         }
@@ -172,12 +172,13 @@ class AuthController {
 
     private function redirectByRole(string $role): never {
         match($role) {
-            ROLE_ADMIN     => redirect('/admin/dashboard.php'),
-            ROLE_SECRETARY => redirect('/secretary/dashboard.php'),
-            ROLE_TEACHER   => redirect('/teacher/dashboard.php'),
-            ROLE_STUDENT   => redirect('/student/dashboard.php'),
-            ROLE_PARENT    => redirect('/parent/dashboard.php'),
-            default        => redirect('/index.php'),
+            ROLE_ADMIN             => redirect('/admin/dashboard.php'),
+            ROLE_SECRETARY         => redirect('/secretary/dashboard.php'),
+            ROLE_TEACHER           => redirect('/teacher/dashboard.php'),
+            ROLE_STUDENT           => redirect('/student/dashboard.php'),
+            ROLE_PARENT            => redirect('/parent/dashboard.php'),
+            ROLE_DISCIPLINE_MASTER => redirect('/admin/dashboard.php'),
+            default                => redirect('/index.php?msg=unauthorized'),
         };
     }
 }

@@ -60,9 +60,9 @@ if ($queryMsg && isset($msgMap[$queryMsg])) {
                 <form method="POST" action="<?= BASE_URL ?>/index.php?action=login">
                     <input type="hidden" name="csrf_token" value="<?= generateCsrfToken() ?>">
 
-                    <!-- Username -->
+                    <!-- Username or Email -->
                     <div class="mb-4">
-                        <label class="block text-sm font-medium text-slate-700 mb-1.5">Username</label>
+                        <label class="block text-sm font-medium text-slate-700 mb-1.5">Username or Email</label>
                         <div class="relative">
                             <span class="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400">
                                 <i class="fa-solid fa-user text-sm"></i>
@@ -70,7 +70,7 @@ if ($queryMsg && isset($msgMap[$queryMsg])) {
                             <input type="text" name="username" required autocomplete="username"
                                    value="<?= e($_POST['username'] ?? '') ?>"
                                    class="w-full pl-9 pr-4 py-3 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition"
-                                   placeholder="Enter your username">
+                                   placeholder="Enter your username or email">
                         </div>
                     </div>
 

@@ -13,6 +13,13 @@ class UserModel extends BaseModel {
         );
     }
 
+    public function findByUsernameOrEmail(string $identifier): ?array {
+        return $this->db->fetchOne(
+            "SELECT * FROM users WHERE username = ? OR email = ?",
+            [$identifier, $identifier]
+        );
+    }
+
     public function findByEmail(string $email): ?array {
         return $this->db->fetchOne(
             "SELECT * FROM users WHERE email = ?",
