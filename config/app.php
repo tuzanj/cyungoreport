@@ -5,7 +5,17 @@ define('APP_NAME', 'CYUNGO TSS REPORT');
 define('APP_LOGO_URL', 'http://cyungotss.ac.rw/assets/img/logo.jpeg');
 define('APP_ADDRESS', 'http://cyungotss.ac.rw/report');
 define('APP_VERSION', '1.0.0');
-define('BASE_URL', 'http://cyungotss.ac.rw/report');
+
+if (!defined('BASE_URL')) {
+    if (!empty($_SERVER['HTTP_HOST'])) {
+        $scheme = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') || ($_SERVER['SERVER_PORT'] ?? '') === '443' ? 'https' : 'http';
+        $basePath = rtrim(dirname($_SERVER['SCRIPT_NAME']), '/\\');
+        define('BASE_URL', $scheme . '://' . $_SERVER['HTTP_HOST'] . $basePath);
+    } else {
+        define('BASE_URL', 'http://cyungotss.ac.rw/report');
+    }
+}
+
 if (!defined('ROOT_PATH')) {
     define('ROOT_PATH', dirname(__DIR__));
 }
