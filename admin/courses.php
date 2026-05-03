@@ -23,7 +23,7 @@ $gradingCriteria = null;
 // Current academic year
 $currentYear     = $db->fetchOne("SELECT * FROM academic_years WHERE is_current=1 LIMIT 1");
 $currentYearId   = $currentYear ? (int)$currentYear['id'] : 0;
-$departments     = $db->fetchAll("SELECT * FROM departments ORDER BY name");
+$departments     = $db->fetchAll("SELECT * FROM trades ORDER BY name");
 
 // Handle POST actions
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {

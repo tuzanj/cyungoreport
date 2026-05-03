@@ -22,7 +22,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     if ($formAction === 'create') {
         $result = $adminCtrl->createDepartment(trim($_POST['name'] ?? ''), trim($_POST['description'] ?? ''));
-        setFlash('success', 'Trade created.');
+        setFlash(!empty($result['success']) ? 'success' : 'danger', $result['message'] ?? $result['error'] ?? 'Unable to create trade.');
         redirect('/admin/departments.php');
     }
 

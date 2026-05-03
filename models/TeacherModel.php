@@ -38,6 +38,10 @@ class TeacherModel extends BaseModel {
         );
     }
 
+    public function getAllWithDept(): array {
+        return $this->getAllWithTrade();
+    }
+
     public function getAssignedCourses(int $teacherId, int $academicYearId): array {
         return $this->db->fetchAll(
             "SELECT cc.id as class_course_id, c.code, c.name as course_name, c.credits,

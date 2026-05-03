@@ -55,11 +55,11 @@ include ROOT_PATH . '/views/components/layout.php';
                        class="w-full px-3 py-2.5 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500">
             </div>
             <div>
-                <label class="block text-sm font-medium text-slate-700 mb-1.5">Department</label>
-                <select name="department_id" class="w-full px-3 py-2.5 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                <label class="block text-sm font-medium text-slate-700 mb-1.5">Trade</label>
+                <select name="trade_id" class="w-full px-3 py-2.5 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500">
                     <option value="">— None —</option>
                     <?php foreach ($departments as $d): ?>
-                    <option value="<?= $d['id'] ?>" <?= (($course['department_id'] ?? '') == $d['id']) ? 'selected' : '' ?>><?= e($d['name']) ?></option>
+                    <option value="<?= $d['id'] ?>" <?= (($course['trade_id'] ?? '') == $d['id']) ? 'selected' : '' ?>><?= e($d['name']) ?></option>
                     <?php endforeach; ?>
                 </select>
             </div>

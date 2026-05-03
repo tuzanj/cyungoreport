@@ -37,6 +37,7 @@ class AdminController {
     }
 
     public function createCourse(array $data): array {
+        $data['trade_id'] = $data['trade_id'] ?? $data['department_id'] ?? null;
         if ($this->courseModel->codeExists($data['code'])) {
             return ['success' => false, 'error' => 'Course code already exists.'];
         }
@@ -46,6 +47,7 @@ class AdminController {
     }
 
     public function updateCourse(int $id, array $data): array {
+        $data['trade_id'] = $data['trade_id'] ?? $data['department_id'] ?? null;
         if ($this->courseModel->codeExists($data['code'], $id)) {
             return ['success' => false, 'error' => 'Course code already in use.'];
         }
@@ -75,6 +77,7 @@ class AdminController {
     }
 
     public function createTeacher(array $data): array {
+        $data['trade_id'] = $data['trade_id'] ?? $data['department_id'] ?? null;
         $data['username'] = trim($data['username'] ?? '');
         $data['email'] = trim($data['email'] ?? '');
 
@@ -157,11 +160,16 @@ class AdminController {
     }
 
     public function createDepartment(string $name, string $description = ''): array {
+        if ($name === '') {
+            return ['success' => false, 'error' => 'Trade name is required.'];
+        }
+
         $id = $this->db->insert(
-            "INSERT INTO departments (name, description) VALUES (?,?)",
+            "INSERT INTO trades (name, description) VALUES (?,?)",
             [$name, $description]
         );
-        return ['success' => true, 'id' => $id];
+        $this->auditModel->log('trade_created', 'trades', $id, null, ['name' => $name, 'description' => $description]);
+        return ['success' => true, 'id' => $id, 'message' => 'Trade created.'];
     }
 
     public function toggleUserStatus(int $userId): array {

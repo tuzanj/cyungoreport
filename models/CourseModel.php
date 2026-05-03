@@ -36,6 +36,10 @@ class CourseModel extends BaseModel {
         );
     }
 
+    public function getAllWithDept(): array {
+        return $this->getAllWithTrade();
+    }
+
     public function setGradingCriteria(int $courseId, int $yearId, array $data): void {
         $existing = $this->db->fetchOne(
             "SELECT id FROM grading_criteria WHERE course_id = ? AND academic_year_id = ?",
