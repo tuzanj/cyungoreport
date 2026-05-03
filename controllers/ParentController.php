@@ -67,12 +67,31 @@ class ParentController {
     }
 
     public function sendMessageToTeacher(int $senderUserId, int $teacherUserId, string $subject, string $body): array {
-        $this->db->insert(
-            "INSERT INTO messages (sender_id, receiver_id, subject, body) VALUES (?,?,?,?)",
-            [$senderUserId, $teacherUserId, $subject, $body]
-        );
-        $this->notifModel->send($teacherUserId, 'New Message from Parent', "Subject: {$subject}", 'info');
-        return ['success' => true, 'message' => 'Message sent.'];
+        try {
+            $teacher = $this->db->fetchOne(
+                "SELECT t.id FROM teachers t JOIN users u ON u.id = t.user_id WHERE u.id = ? AND u.role = ? AND u.is_active = 1",
+                [$teacherUserId, ROLE_TEACHER]
+            );
+            if (!$teacher) {
+                return ['success' => false, 'error' => 'Please select a valid active teacher.'];
+            }
+
+            $subject = trim($subject) ?: 'Message from parent';
+            $body = trim($body);
+            if ($body === '') {
+                return ['success' => false, 'error' => 'Message body is required.'];
+            }
+
+            $this->db->insert(
+                "INSERT INTO messages (sender_id, receiver_id, subject, body) VALUES (?,?,?,?)",
+                [$senderUserId, $teacherUserId, $subject, $body]
+            );
+            $this->notifModel->send($teacherUserId, 'New Message from Parent', "Subject: {$subject}", 'info', '/teacher/notifications.php');
+            return ['success' => true, 'message' => 'Message sent.'];
+        } catch (Throwable $e) {
+            error_log("Parent Message Error: " . $e->getMessage());
+            return ['success' => false, 'error' => 'Unable to send message. Please try again.'];
+        }
     }
 
     public function getMessages(int $userId): array {

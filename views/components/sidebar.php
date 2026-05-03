@@ -29,6 +29,7 @@ $menus = [
         ['icon' => 'fa-pen-to-square',  'label' => 'Enter Marks',     'href' => '/teacher/marks.php'],
         ['icon' => 'fa-calendar-check', 'label' => 'Attendance',      'href' => '/teacher/attendance.php'],
         ['icon' => 'fa-chart-bar',      'label' => 'Reports',         'href' => '/teacher/reports.php'],
+        ['icon' => 'fa-envelope',       'label' => 'Messages',        'href' => '/teacher/messages.php'],
         ['icon' => 'fa-envelope-open-text','label'=>'Grade Claims',   'href' => '/teacher/claims.php'],
     ],
     'student' => [

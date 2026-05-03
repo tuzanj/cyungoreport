@@ -2,6 +2,7 @@
 // Handles student registration from admin panel
 require_once ROOT_PATH . '/config/app.php';
 require_once ROOT_PATH . '/controllers/AdminController.php';
+require_once ROOT_PATH . '/classes/StudentBulkManager.php';
 
 $admin = new AdminController();
 
@@ -122,41 +123,9 @@ if ($action === 'register') {
     </div>
     <?php
 } elseif ($action === 'import') {
-    if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_FILES['csv_file'])) {
-        $file = $_FILES['csv_file'];
-        
-        if ($file['error'] === UPLOAD_ERR_OK) {
-            $fileName = $file['name'];
-            $fileExt = strtolower(pathinfo($fileName, PATHINFO_EXTENSION));
-            
-            if (in_array($fileExt, ['csv', 'xls', 'xlsx'])) {
-                $uploadDir = ROOT_PATH . '/uploads/imports/';
-                if (!is_dir($uploadDir)) {
-                    mkdir($uploadDir, 0755, true);
-                }
-                
-                $newFileName = 'import_' . time() . '_' . basename($fileName);
-                $uploadPath = $uploadDir . $newFileName;
-                
-                if (move_uploaded_file($file['tmp_name'], $uploadPath)) {
-                    $result = $admin->importStudentsFromCSV($uploadPath);
-                    
-                    if ($result['success']) {
-                        setFlash('success', "Successfully imported {$result['imported']} students. " . 
-                                          "{$result['failed']} failed." . 
-                                          (count($result['errors']) > 0 ? " Errors: " . implode("; ", array_slice($result['errors'], 0, 3)) : ""));
-                    } else {
-                        setFlash('danger', $result['error']);
-                    }
-                    
-                    unlink($uploadPath);
-                } else {
-                    setFlash('danger', 'Failed to upload file.');
-                }
-            } else {
-                setFlash('danger', 'Invalid file format. Only CSV, XLS, and XLSX are allowed.');
-            }
-        }
+    if ($_SERVER['REQUEST_METHOD'] === 'POST' && validateCsrfToken($_POST['csrf_token'] ?? '')) {
+        $result = StudentBulkManager::handleImportUpload();
+        setFlash($result['success'] ? 'success' : 'danger', $result['success'] ? "Successfully imported {$result['imported']} students. {$result['failed']} failed." . (!empty($result['errors']) ? " Errors: " . implode("; ", array_slice($result['errors'], 0, 3)) : '') : $result['error']);
     }
 
     $page_title = 'Bulk Import Students';
@@ -181,10 +150,11 @@ if ($action === 'register') {
                 </div>
 
                 <form method="POST" action="" enctype="multipart/form-data">
+                    <input type="hidden" name="csrf_token" value="<?= generateCsrfToken() ?>">
                     <div class="mb-3">
                         <label for="csv_file" class="form-label">Choose CSV File *</label>
-                        <input type="file" class="form-control" id="csv_file" name="csv_file" accept=".csv,.xls,.xlsx" required>
-                        <small class="text-muted">Supported formats: CSV, XLS, XLSX</small>
+                        <input type="file" class="form-control" id="csv_file" name="csv_file" accept=".csv" required>
+                        <small class="text-muted">Supported format: CSV</small>
                     </div>
 
                     <div class="mt-4">
@@ -197,15 +167,13 @@ if ($action === 'register') {
     </div>
     <?php
 } elseif ($action === 'download_template') {
-    header('Content-Type: text/csv; charset=utf-8');
-    header('Content-Disposition: attachment; filename="student_import_template.csv"');
-    
-    $template = ExcelStudentImporter::getTemplateCSV();
-    echo $template;
-    exit;
+    StudentBulkManager::downloadTemplate();
+} elseif ($action === 'download_class') {
+    StudentBulkManager::downloadClassList((int)($_GET['class_id'] ?? 0));
 } else {
     // List view - show all students
     $db = Database::getInstance();
+    $classes = StudentBulkManager::getClasses();
     $students = $db->fetchAll(
         "SELECT s.*, u.username, u.email, u.is_active, c.name as class_name
          FROM students s
@@ -224,6 +192,27 @@ if ($action === 'register') {
             <div class="btn-group">
                 <a href="?action=register" class="btn btn-primary"><i class="fas fa-user-plus"></i> Register Student</a>
                 <a href="?action=import" class="btn btn-success"><i class="fas fa-file-upload"></i> Bulk Import</a>
+                <a href="?action=download_class" class="btn btn-info"><i class="fas fa-download"></i> Download All</a>
+            </div>
+        </div>
+
+        <div class="card mb-3">
+            <div class="card-body">
+                <form method="GET" class="row g-2 align-items-end">
+                    <input type="hidden" name="action" value="download_class">
+                    <div class="col-md-6">
+                        <label class="form-label">Download students by class</label>
+                        <select name="class_id" class="form-control">
+                            <option value="0">All classes</option>
+                            <?php foreach ($classes as $class): ?>
+                                <option value="<?= (int)$class['id'] ?>"><?= htmlspecialchars($class['name'] . ' - ' . ($class['year_name'] ?? '')) ?></option>
+                            <?php endforeach; ?>
+                        </select>
+                    </div>
+                    <div class="col-md-3">
+                        <button type="submit" class="btn btn-info w-100"><i class="fas fa-file-csv"></i> Download CSV</button>
+                    </div>
+                </form>
             </div>
         </div>
 

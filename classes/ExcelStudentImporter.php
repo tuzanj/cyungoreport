@@ -176,7 +176,7 @@ class ExcelStudentImporter {
             }
 
             // Create student record
-            $this->db->insert(
+            $studentDbId = $this->db->insert(
                 "INSERT INTO students (user_id, student_id, first_name, last_name, gender, date_of_birth, phone, address, emergency_contact, enrollment_date)
                  VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
                 [
@@ -202,7 +202,7 @@ class ExcelStudentImporter {
                         "INSERT INTO enrollments (student_id, class_id, academic_year_id, enrollment_date)
                          VALUES (?, ?, ?, ?)",
                         [
-                            $this->db->lastInsertId(),
+                            $studentDbId,
                             $studentData['class_id'],
                             $currentYear['id'],
                             date('Y-m-d')
