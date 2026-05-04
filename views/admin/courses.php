@@ -112,7 +112,7 @@ $typeBadge = [
                 </tr>
             </thead>
             <tbody class="divide-y divide-slate-50">
-                <?php if (isset($courses)): foreach ($courses as $c): ?>
+                <?php if (isset($courses) && is_array($courses)): foreach ($courses as $c): ?>
                 <tr class="hover:bg-slate-50 transition-colors">
                     <td class="px-5 py-3 font-mono font-semibold text-indigo-700"><?= e($c['code'] ?? '') ?></td>
                     <td class="px-5 py-3 font-medium"><?= e($c['name'] ?? '') ?></td>
@@ -133,9 +133,10 @@ $typeBadge = [
                         </div>
                     </td>
                 </tr>
-                <?php endforeach; endif; ?>
+                <?php endforeach; ?>
                 <?php if (empty($courses)): ?>
                 <tr><td colspan="6" class="px-5 py-10 text-center text-slate-400">No courses found. <a href="?action=new" class="text-indigo-600 hover:underline">Create one</a></td></tr>
+                <?php endif; ?>
                 <?php endif; ?>
             </tbody>
         </table>

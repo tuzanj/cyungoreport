@@ -32,6 +32,7 @@ $currentAssessment = null;
 $assessmentMarks = [];
 $criteria      = null;
 $courseName    = '';
+$moduleWeight  = 0;
 $canPublish    = false;
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
@@ -111,9 +112,9 @@ if ($selectedCcId) {
         $yearId
     );
     $cc = $db->fetchOne("SELECT c.name as course_name, c.module_weight FROM class_courses cc JOIN courses c ON c.id=cc.course_id WHERE cc.id=?", [$selectedCcId]);
-    $courseName = $cc['course_name'] ?? '';
-    $moduleWeight = $cc['module_weight'] ?? 0;
-    $canPublish = !empty(array_filter($students, fn($s) => $s['mark_status'] === 'draft'));
+    $courseName = $cc ? ($cc['course_name'] ?? '') : '';
+    $moduleWeight = $cc ? ($cc['module_weight'] ?? 0) : 0;
+    $canPublish = !empty(array_filter($students, fn($s) => ($s['mark_status'] ?? '') === 'draft'));
 }
 
 include ROOT_PATH . '/views/teacher/marks.php';

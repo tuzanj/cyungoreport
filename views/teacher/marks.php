@@ -105,6 +105,7 @@ include ROOT_PATH . '/views/components/layout.php';
                                 <td class="px-6 py-3 text-center">
                                     <input type="number" name="marks[<?= $s['id'] ?? 0 ?>]" 
                                            value="<?= isset($assessmentMarks[$s['id']]) ? $assessmentMarks[$s['id']] : '' ?>"
+
                                            min="0" max="<?= $currentAssessment['max_marks'] ?? 0 ?>" step="0.5"
                                            class="w-24 px-3 py-2 border border-slate-200 rounded-lg text-center text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
                                            placeholder="—">
