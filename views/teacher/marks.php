@@ -112,7 +112,7 @@ include ROOT_PATH . '/views/components/layout.php';
                                 <td class="px-6 py-3 text-center">
                                     <?php if (isset($assessmentMarks[$s['id']])): ?>
                                     <span class="text-slate-500 font-medium">
-                                        <?= number_format(($assessmentMarks[$s['id']] / $currentAssessment['max_marks']) * 100, 1) ?>%
+                                        <?= ($currentAssessment['max_marks'] > 0) ? number_format(($assessmentMarks[$s['id']] / $currentAssessment['max_marks']) * 100, 1) : '0' ?>%
                                     </span>
                                     <?php else: ?>
                                     <span class="text-slate-300">—</span>
