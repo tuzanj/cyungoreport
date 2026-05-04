@@ -31,6 +31,10 @@ CREATE TABLE IF NOT EXISTS assessment_marks (
     created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
     updated_at DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     UNIQUE KEY unique_assessment_student (assessment_id, student_id),
+    FOREIGN KEY (assessment_id) REFERENCES assessments(id) ON DELETE CASCADE,
+    FOREIGN KEY (student_id) REFERENCES students(id) ON DELETE CASCADE
+);
+
 -- 4. Update marks table columns
 ALTER TABLE marks DROP COLUMN IF EXISTS assignments_score;
 ALTER TABLE marks DROP COLUMN IF EXISTS quizzes_score;
