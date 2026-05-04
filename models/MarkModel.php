@@ -282,7 +282,7 @@ class MarkModel extends BaseModel {
     public function getClassReport(int $classCourseId): array {
         return $this->db->fetchAll(
             "SELECT s.student_id, s.first_name, s.last_name,
-                    m.assignments_score, m.quizzes_score, m.midterm_score, m.final_score,
+                    m.formative_score, m.integrated_score, m.comprehensive_score,
                     m.calculated_grade, m.letter_grade, m.is_pass, m.status
              FROM marks m
              JOIN students s ON s.id = m.student_id

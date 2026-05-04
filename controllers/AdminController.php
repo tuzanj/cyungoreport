@@ -37,24 +37,34 @@ class AdminController {
     }
 
     public function createCourse(array $data): array {
-        $data['trade_id'] = $data['trade_id'] ?? $data['department_id'] ?? null;
-        if ($this->courseModel->codeExists($data['code'])) {
-            return ['success' => false, 'error' => 'Course code already exists.'];
+        try {
+            $data['trade_id'] = $data['trade_id'] ?? $data['department_id'] ?? null;
+            if ($this->courseModel->codeExists($data['code'])) {
+                return ['success' => false, 'error' => 'Course code already exists.'];
+            }
+            $id = $this->courseModel->create($data);
+            $this->auditModel->log('course_created', 'courses', $id, null, $data);
+            return ['success' => true, 'id' => $id, 'message' => 'Course created.'];
+        } catch (Exception $e) {
+            error_log("Error creating course: " . $e->getMessage());
+            return ['success' => false, 'error' => 'Database error: ' . $e->getMessage()];
         }
-        $id = $this->courseModel->create($data);
-        $this->auditModel->log('course_created', 'courses', $id, null, $data);
-        return ['success' => true, 'id' => $id, 'message' => 'Course created.'];
     }
 
     public function updateCourse(int $id, array $data): array {
-        $data['trade_id'] = $data['trade_id'] ?? $data['department_id'] ?? null;
-        if ($this->courseModel->codeExists($data['code'], $id)) {
-            return ['success' => false, 'error' => 'Course code already in use.'];
+        try {
+            $data['trade_id'] = $data['trade_id'] ?? $data['department_id'] ?? null;
+            if ($this->courseModel->codeExists($data['code'], $id)) {
+                return ['success' => false, 'error' => 'Course code already in use.'];
+            }
+            $old = $this->courseModel->findById($id);
+            $this->courseModel->update($id, $data);
+            $this->auditModel->log('course_updated', 'courses', $id, $old, $data);
+            return ['success' => true, 'message' => 'Course updated.'];
+        } catch (Exception $e) {
+            error_log("Error updating course: " . $e->getMessage());
+            return ['success' => false, 'error' => 'Database error: ' . $e->getMessage()];
         }
-        $old = $this->courseModel->findById($id);
-        $this->courseModel->update($id, $data);
-        $this->auditModel->log('course_updated', 'courses', $id, $old, $data);
-        return ['success' => true, 'message' => 'Course updated.'];
     }
 
     public function deleteCourse(int $id): array {
