@@ -14,7 +14,7 @@ CREATE TABLE users (
     username VARCHAR(50) UNIQUE NOT NULL,
     email VARCHAR(100) UNIQUE NOT NULL,
     password_hash VARCHAR(255) NOT NULL,
-    role ENUM('admin','secretary','teacher','student','parent') NOT NULL,
+    role ENUM('admin','secretary','teacher','student','parent','discipline_master') NOT NULL,
     is_active TINYINT(1) DEFAULT 1,
     failed_attempts INT DEFAULT 0,
     locked_until DATETIME NULL,

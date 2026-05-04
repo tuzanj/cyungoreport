@@ -6,7 +6,11 @@ require_once ROOT_PATH . '/config/app.php';
 require_once ROOT_PATH . '/config/database.php';
 
 startSecureSession();
-requireRole(ROLE_TEACHER);
+if (currentRole() === ROLE_ADMIN) {
+    // Admin can access all courses
+} else {
+    requireRole(ROLE_TEACHER);
+}
 
 require_once ROOT_PATH . '/controllers/TeacherController.php';
 require_once ROOT_PATH . '/models/TeacherModel.php';
@@ -17,13 +21,25 @@ $teacherCtrl  = new TeacherController();
 $courseModel  = new CourseModel();
 $db           = Database::getInstance();
 
-$teacher     = $teacherModel->findByUserId(currentUserId());
-if (!$teacher) redirect('/index.php');
-
 $currentYear = $db->fetchOne("SELECT * FROM academic_years WHERE is_current=1 LIMIT 1");
 $yearId      = $currentYear ? (int)$currentYear['id'] : 0;
 
-$courses       = $teacherModel->getAssignedCourses((int)$teacher['id'], $yearId);
+if (currentRole() === ROLE_ADMIN) {
+    // Admin gets all courses for the current year
+    $courses = $db->fetchAll(
+        "SELECT cc.id as class_course_id, c.name as course_name, cl.name as class_name 
+         FROM class_courses cc
+         JOIN courses c ON c.id = cc.course_id
+         JOIN classes cl ON cl.id = cc.class_id
+         WHERE cc.academic_year_id = ?
+         ORDER BY cl.name, c.name",
+        [$yearId]
+    );
+} else {
+    $teacher = $teacherModel->findByUserId(currentUserId());
+    if (!$teacher) redirect('/index.php');
+    $courses = $teacherModel->getAssignedCourses((int)$teacher['id'], $yearId);
+}
 $selectedCcId  = (int)($_GET['cc'] ?? 0);
 $assessmentId  = (int)($_GET['assessment_id'] ?? 0);
 $students      = [];

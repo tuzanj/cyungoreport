@@ -119,10 +119,10 @@ include ROOT_PATH . '/views/components/layout.php';
                     <td class="px-5 py-3 text-slate-500"><?= e($u['email']) ?></td>
                     <td class="px-5 py-3">
                         <?php
-                        $roleColors = ['admin'=>'bg-indigo-100 text-indigo-700','secretary'=>'bg-teal-100 text-teal-700','teacher'=>'bg-blue-100 text-blue-700','student'=>'bg-violet-100 text-violet-700','parent'=>'bg-green-100 text-green-700'];
+                        $roleColors = ['admin'=>'bg-indigo-100 text-indigo-700','secretary'=>'bg-teal-100 text-teal-700','teacher'=>'bg-blue-100 text-blue-700','student'=>'bg-violet-100 text-violet-700','parent'=>'bg-green-100 text-green-700','discipline_master'=>'bg-red-100 text-red-700'];
                         $rc = $roleColors[$u['role']] ?? 'bg-slate-100 text-slate-600';
                         ?>
-                        <span class="badge <?= $rc ?>"><?= ucfirst($u['role']) ?></span>
+                        <span class="badge <?= $rc ?>"><?= ucfirst(str_replace('_',' ',$u['role'])) ?></span>
                     </td>
                     <td class="px-5 py-3 text-center">
                         <span class="badge <?= $u['is_active'] ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700' ?>">
@@ -205,27 +205,31 @@ include ROOT_PATH . '/views/components/layout.php';
         <form method="POST" action="">
             <input type="hidden" name="csrf_token" value="<?= generateCsrfToken() ?>">
             <input type="hidden" name="form_action" value="create_discipline">
-            <div class="mb-4">
-                <label class="block text-sm font-semibold mb-2">Username *</label>
-                <input type="text" name="username" class="w-full px-3 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500" required>
-            </div>
-            <div class="mb-4">
-                <label class="block text-sm font-semibold mb-2">Email *</label>
-                <input type="email" name="email" class="w-full px-3 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500" required>
+            <div class="space-y-4 mb-6">
+                <div>
+                    <label class="block text-sm font-semibold mb-1">Username *</label>
+                    <input type="text" name="username" required class="w-full px-3 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                </div>
+                <div>
+                    <label class="block text-sm font-semibold mb-1">Email *</label>
+                    <input type="email" name="email" required class="w-full px-3 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                </div>
             </div>
             <div class="flex gap-2 justify-end">
                 <button type="button" class="px-4 py-2 rounded-lg border border-slate-300 text-slate-600 hover:bg-slate-50" onclick="document.getElementById('disciplineModal').close()">Cancel</button>
-                <button type="submit" class="px-4 py-2 bg-amber-600 text-white rounded-lg hover:bg-amber-700">Create</button>
+                <button type="submit" class="px-4 py-2 bg-amber-600 text-white rounded-lg hover:bg-amber-700">Create Account</button>
             </div>
         </form>
     </div>
 </dialog>
 
 <script>
-function openRoleModal(userId, username, role) {
+function openRoleModal(userId, username, currentRole) {
     document.getElementById('roleModalUserId').value = userId;
     document.getElementById('roleModalUsername').textContent = username;
-    document.getElementById('roleModalSelect').value = role;
+    document.getElementById('roleModalSelect').value = currentRole;
     document.getElementById('roleModal').showModal();
 }
 </script>
+
+<?php include ROOT_PATH . '/views/components/footer.php'; ?>

@@ -159,6 +159,8 @@ class AdminController {
             'total_classes'   => $db->fetchOne("SELECT COUNT(*) as c FROM classes")['c'] ?? 0,
             'pending_claims'  => $db->fetchOne("SELECT COUNT(*) as c FROM grade_claims WHERE status='pending'")['c'] ?? 0,
             'recent_logs'     => $db->fetchAll("SELECT al.*, u.username FROM audit_logs al LEFT JOIN users u ON u.id=al.user_id ORDER BY al.created_at DESC LIMIT 5"),
+            'total_incidents' => $db->fetchOne("SELECT COUNT(*) as c FROM student_discipline")['c'] ?? 0,
+            'total_assessments' => $db->fetchOne("SELECT COUNT(*) as c FROM assessments")['c'] ?? 0,
             'enrollment_by_class' => $db->fetchAll(
                 "SELECT c.name, COUNT(e.id) as cnt FROM classes c
                  LEFT JOIN enrollments e ON e.class_id=c.id AND e.status='active'
@@ -200,6 +202,37 @@ class AdminController {
         $this->userModel->updateStatus($userId, $newStatus);
         $this->auditModel->log($newStatus ? 'user_activated' : 'user_deactivated', 'users', $userId);
         return ['success' => true, 'is_active' => $newStatus];
+    }
+
+    public function createDisciplineMaster(array $data): array {
+        $username = trim($data['username'] ?? '');
+        $email    = trim($data['email'] ?? '');
+
+        if (empty($username) || empty($email)) {
+            return ['success' => false, 'error' => 'Username and email are required.'];
+        }
+
+        if ($this->userModel->usernameExists($username)) {
+            return ['success' => false, 'error' => 'Username already exists.'];
+        }
+
+        if ($this->userModel->emailExists($email)) {
+            return ['success' => false, 'error' => 'Email already in use.'];
+        }
+
+        // Create user account
+        $password = bin2hex(random_bytes(4));
+        $userId = $this->userModel->createUser([
+            'username' => $username,
+            'email'    => $email,
+            'password' => $password,
+            'role'     => ROLE_DISCIPLINE_MASTER,
+        ]);
+
+        $this->notifModel->send($userId, 'Discipline Master Account Created', "Welcome! Username: $username, Password: $password", 'success');
+        $this->auditModel->log('discipline_master_created', 'users', $userId);
+
+        return ['success' => true, 'password' => $password, 'message' => 'Discipline master account created.'];
     }
 
     public function resolveGradeClaim(int $claimId, string $response, string $status): array {

@@ -15,8 +15,8 @@ include ROOT_PATH . '/views/components/layout.php';
     $cards = [
         ['label'=>'Total Students', 'value'=>$stats['total_students'], 'icon'=>'fa-user-graduate', 'color'=>'bg-indigo-500', 'light'=>'bg-indigo-50 text-indigo-600'],
         ['label'=>'Teachers',       'value'=>$stats['total_teachers'], 'icon'=>'fa-chalkboard-user','color'=>'bg-blue-500',   'light'=>'bg-blue-50 text-blue-600'],
-        ['label'=>'Courses',        'value'=>$stats['total_courses'],  'icon'=>'fa-book-open',      'color'=>'bg-teal-500',   'light'=>'bg-teal-50 text-teal-600'],
-        ['label'=>'Classes',        'value'=>$stats['total_classes'],  'icon'=>'fa-building',       'color'=>'bg-violet-500', 'light'=>'bg-violet-50 text-violet-600'],
+        ['label'=>'Assessments',    'value'=>$stats['total_assessments'], 'icon'=>'fa-file-pen',   'color'=>'bg-teal-500',   'light'=>'bg-teal-50 text-teal-600'],
+        ['label'=>'Discipline',     'value'=>$stats['total_incidents'],   'icon'=>'fa-gavel',      'color'=>'bg-red-500',    'light'=>'bg-red-50 text-red-600'],
     ];
     foreach ($cards as $c):
     ?>
@@ -60,20 +60,20 @@ include ROOT_PATH . '/views/components/layout.php';
         </div>
 
         <!-- Quick Links -->
-        <h3 class="font-semibold text-slate-800 mt-5 mb-3">Quick Actions</h3>
+        <h3 class="font-semibold text-slate-800 mt-5 mb-3">Staff Functions</h3>
         <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
             <?php
             $quickLinks = [
-                ['href'=>'/admin/courses.php?action=new',  'label'=>'New Course',   'icon'=>'fa-plus', 'color'=>'indigo'],
-                ['href'=>'/admin/teachers.php?action=new', 'label'=>'Add Teacher',  'icon'=>'fa-user-plus', 'color'=>'blue'],
-                ['href'=>'/admin/classes.php?action=new',  'label'=>'New Class',    'icon'=>'fa-building', 'color'=>'teal'],
-                ['href'=>'/admin/timetable.php',           'label'=>'Timetable',    'icon'=>'fa-calendar', 'color'=>'violet'],
+                ['href'=>'/teacher/marks.php',             'label'=>'Record Marks',  'icon'=>'fa-pen-to-square', 'color'=>'indigo'],
+                ['href'=>'/discipline/dashboard.php',      'label'=>'Discipline',    'icon'=>'fa-gavel', 'color'=>'red'],
+                ['href'=>'/admin/courses.php?action=new',  'label'=>'New Course',    'icon'=>'fa-plus', 'color'=>'teal'],
+                ['href'=>'/admin/timetable.php',           'label'=>'Timetable',     'icon'=>'fa-calendar', 'color'=>'violet'],
             ];
             foreach ($quickLinks as $ql):
             ?>
             <a href="<?= BASE_URL . $ql['href'] ?>"
-               class="flex flex-col items-center gap-1 p-3 bg-slate-50 hover:bg-indigo-50 rounded-xl text-center transition-colors">
-                <i class="fa-solid <?= $ql['icon'] ?> text-indigo-600 text-sm"></i>
+               class="flex flex-col items-center gap-1 p-3 bg-slate-50 hover:bg-<?= $ql['color'] ?>-50 rounded-xl text-center transition-colors">
+                <i class="fa-solid <?= $ql['icon'] ?> text-<?= $ql['color'] ?>-600 text-sm"></i>
                 <span class="text-xs text-slate-600 font-medium"><?= $ql['label'] ?></span>
             </a>
             <?php endforeach; ?>

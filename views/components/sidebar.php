@@ -8,6 +8,8 @@ $menus = [
         ['icon' => 'fa-graduation-cap', 'label' => 'Courses',         'href' => '/admin/courses.php'],
         ['icon' => 'fa-building-columns','label'=> 'Classes',         'href' => '/admin/classes.php'],
         ['icon' => 'fa-chalkboard-user','label' => 'Teachers',        'href' => '/admin/teachers.php'],
+        ['icon' => 'fa-pen-to-square',  'label' => 'Record Marks',    'href' => '/teacher/marks.php'],
+        ['icon' => 'fa-gavel',          'label' => 'Discipline',      'href' => '/discipline/dashboard.php'],
         ['icon' => 'fa-calendar-days',  'label' => 'Timetable',       'href' => '/admin/timetable.php'],
         ['icon' => 'fa-chart-pie',      'label' => 'Analytics',       'href' => '/admin/analytics.php'],
         ['icon' => 'fa-file-lines',     'label' => 'Audit Logs',      'href' => '/admin/audit.php'],
@@ -47,16 +49,22 @@ $menus = [
         ['icon' => 'fa-medal',          'label' => 'Performance',     'href' => '/parent/performance.php'],
         ['icon' => 'fa-envelope',       'label' => 'Messages',        'href' => '/parent/messages.php'],
         ['icon' => 'fa-bell',           'label' => 'Notifications',   'href' => '/parent/notifications.php'],
+    'discipline_master' => [
+        ['icon' => 'fa-gauge',          'label' => 'Dashboard',       'href' => '/discipline/dashboard.php'],
+        ['icon' => 'fa-gavel',          'label' => 'Manage Faults',   'href' => '/discipline/faults.php'],
+        ['icon' => 'fa-users',          'label' => 'Student Records', 'href' => '/discipline/students.php'],
+        ['icon' => 'fa-file-signature', 'label' => 'Report Card Marks','href'=> '/discipline/marks.php'],
     ],
 ];
 
 $currentMenus = $menus[$role] ?? [];
 $roleColors = [
-    'admin'     => 'from-indigo-900 to-indigo-700',
-    'secretary' => 'from-teal-900 to-teal-700',
-    'teacher'   => 'from-blue-900 to-blue-700',
-    'student'   => 'from-violet-900 to-violet-700',
-    'parent'    => 'from-green-900 to-green-700',
+    'admin'             => 'from-indigo-900 to-indigo-700',
+    'secretary'         => 'from-teal-900 to-teal-700',
+    'teacher'           => 'from-blue-900 to-blue-700',
+    'student'           => 'from-violet-900 to-violet-700',
+    'parent'            => 'from-green-900 to-green-700',
+    'discipline_master' => 'from-red-900 to-red-700',
 ];
 $gradient = $roleColors[$role] ?? 'from-slate-900 to-slate-700';
 $roleLabel = ucfirst($role);
