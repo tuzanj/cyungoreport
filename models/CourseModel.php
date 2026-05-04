@@ -8,15 +8,15 @@ class CourseModel extends BaseModel {
 
     public function create(array $data): int {
         return $this->db->insert(
-            "INSERT INTO courses (code, name, description, type, credits, trade_id) VALUES (?, ?, ?, ?, ?, ?)",
-            [$data['code'], $data['name'], $data['description'] ?? null, $data['type'] ?? 'core', $data['credits'] ?? 3, $data['trade_id'] ?? null]
+            "INSERT INTO courses (code, name, description, type, credits, module_weight, trade_id) VALUES (?, ?, ?, ?, ?, ?, ?)",
+            [$data['code'], $data['name'], $data['description'] ?? null, $data['type'] ?? 'specific', $data['credits'] ?? 3, $data['module_weight'] ?? 0, $data['trade_id'] ?? null]
         );
     }
 
     public function update(int $id, array $data): int {
         return $this->db->execute(
-            "UPDATE courses SET code=?, name=?, description=?, type=?, credits=?, trade_id=? WHERE id=?",
-            [$data['code'], $data['name'], $data['description'] ?? null, $data['type'], $data['credits'], $data['trade_id'] ?? null, $id]
+            "UPDATE courses SET code=?, name=?, description=?, type=?, credits=?, module_weight=?, trade_id=? WHERE id=?",
+            [$data['code'], $data['name'], $data['description'] ?? null, $data['type'], $data['credits'], $data['module_weight'], $data['trade_id'] ?? null, $id]
         );
     }
 

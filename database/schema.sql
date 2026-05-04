@@ -69,11 +69,12 @@ CREATE TABLE courses (
     code VARCHAR(20) UNIQUE NOT NULL,
     name VARCHAR(100) NOT NULL,
     description TEXT,
-    type ENUM('core','general','elective') DEFAULT 'core',
+    type ENUM('complementary','general','specific','co-curricular') DEFAULT 'specific',
     credits INT DEFAULT 3,
-    department_id INT,
+    module_weight INT DEFAULT 0,
+    trade_id INT,
     created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-    FOREIGN KEY (department_id) REFERENCES departments(id)
+    FOREIGN KEY (trade_id) REFERENCES trades(id) ON DELETE SET NULL
 );
 
 CREATE TABLE grading_criteria (
@@ -200,14 +201,40 @@ CREATE TABLE schedules (
 -- MARKS & GRADES
 -- ============================================================
 
+CREATE TABLE assessments (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    class_course_id INT NOT NULL,
+    assessment_type ENUM('formative', 'integrated', 'comprehensive') NOT NULL,
+    assessment_number INT NOT NULL,
+    assessment_name VARCHAR(100) DEFAULT NULL,
+    date_of_assessment DATE NOT NULL,
+    max_marks DECIMAL(5,2) NOT NULL DEFAULT 100.00,
+    term INT NOT NULL DEFAULT 1,
+    created_by INT NOT NULL,
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (class_course_id) REFERENCES class_courses(id) ON DELETE CASCADE,
+    FOREIGN KEY (created_by) REFERENCES users(id)
+);
+
+CREATE TABLE assessment_marks (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    assessment_id INT NOT NULL,
+    student_id INT NOT NULL,
+    score DECIMAL(5,2) NOT NULL,
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    updated_at DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    UNIQUE KEY unique_assessment_student (assessment_id, student_id),
+    FOREIGN KEY (assessment_id) REFERENCES assessments(id) ON DELETE CASCADE,
+    FOREIGN KEY (student_id) REFERENCES students(id) ON DELETE CASCADE
+);
+
 CREATE TABLE marks (
     id INT AUTO_INCREMENT PRIMARY KEY,
     student_id INT NOT NULL,
     class_course_id INT NOT NULL,
-    assignments_score DECIMAL(5,2) DEFAULT NULL,
-    quizzes_score DECIMAL(5,2) DEFAULT NULL,
-    midterm_score DECIMAL(5,2) DEFAULT NULL,
-    final_score DECIMAL(5,2) DEFAULT NULL,
+    formative_score DECIMAL(5,2) DEFAULT NULL,
+    integrated_score DECIMAL(5,2) DEFAULT NULL,
+    comprehensive_score DECIMAL(5,2) DEFAULT NULL,
     calculated_grade DECIMAL(5,2) DEFAULT NULL,
     letter_grade VARCHAR(5),
     status ENUM('draft','published') DEFAULT 'draft',

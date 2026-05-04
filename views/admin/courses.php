@@ -44,14 +44,20 @@ include ROOT_PATH . '/views/components/layout.php';
             <div>
                 <label class="block text-sm font-medium text-slate-700 mb-1.5">Type *</label>
                 <select name="type" class="w-full px-3 py-2.5 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500">
-                    <?php foreach (['core','general','elective'] as $t): ?>
-                    <option value="<?= $t ?>" <?= (($course['type'] ?? 'core') === $t) ? 'selected' : '' ?>><?= ucfirst($t) ?></option>
+                    <?php foreach (['complementary','general','specific','co-curricular'] as $t): ?>
+                    <option value="<?= $t ?>" <?= (($course['type'] ?? 'specific') === $t) ? 'selected' : '' ?>><?= ucfirst($t) ?></option>
                     <?php endforeach; ?>
                 </select>
             </div>
             <div>
+                <label class="block text-sm font-medium text-slate-700 mb-1.5">Module Weight (Credits * 10)</label>
+                <input type="number" name="module_weight" min="0" value="<?= e($course['module_weight'] ?? 0) ?>"
+                       class="w-full px-3 py-2.5 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                       placeholder="e.g. 30">
+            </div>
+            <div>
                 <label class="block text-sm font-medium text-slate-700 mb-1.5">Credits</label>
-                <input type="number" name="credits" min="1" max="10" value="<?= e($course['credits'] ?? 3) ?>"
+                <input type="number" name="credits" min="1" max="100" value="<?= e($course['credits'] ?? 3) ?>"
                        class="w-full px-3 py-2.5 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500">
             </div>
             <div>
@@ -79,44 +85,6 @@ include ROOT_PATH . '/views/components/layout.php';
         </div>
     </form>
 </div>
-
-<!-- Grading Criteria Section (only on edit) -->
-<?php if ($action === 'edit' && !empty($course)): ?>
-<div class="bg-white rounded-2xl shadow-sm border border-slate-100 p-6 mb-6">
-    <h3 class="font-semibold text-slate-800 mb-1">Grading Criteria</h3>
-    <p class="text-xs text-slate-400 mb-4">Weights must sum to 100%</p>
-    <form method="POST" action="<?= BASE_URL ?>/admin/courses.php">
-        <input type="hidden" name="csrf_token" value="<?= generateCsrfToken() ?>">
-        <input type="hidden" name="form_action" value="set_grading">
-        <input type="hidden" name="course_id" value="<?= e($course['id']) ?>">
-        <input type="hidden" name="year_id" value="<?= e($currentYearId ?? '') ?>">
-        <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-5 gap-4">
-            <?php
-            $gc = $gradingCriteria ?? null;
-            $fields = [
-                ['name'=>'assignments_weight','label'=>'Assignments %','default'=>$gc['assignments_weight']??20],
-                ['name'=>'quizzes_weight',    'label'=>'Quizzes %',    'default'=>$gc['quizzes_weight']??10],
-                ['name'=>'midterm_weight',    'label'=>'Midterm %',    'default'=>$gc['midterm_weight']??30],
-                ['name'=>'final_weight',      'label'=>'Final %',      'default'=>$gc['final_weight']??40],
-                ['name'=>'passing_score',     'label'=>'Pass Score',   'default'=>$gc['passing_score']??50],
-            ];
-            foreach ($fields as $f):
-            ?>
-            <div>
-                <label class="block text-xs font-medium text-slate-600 mb-1"><?= $f['label'] ?></label>
-                <input type="number" name="<?= $f['name'] ?>" step="0.01" min="0" max="100"
-                       value="<?= $f['default'] ?>"
-                       class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500">
-            </div>
-            <?php endforeach; ?>
-        </div>
-        <button type="submit" class="mt-4 bg-teal-600 hover:bg-teal-700 text-white px-5 py-2.5 rounded-lg text-sm font-semibold transition-colors">
-            <i class="fa-solid fa-sliders mr-1"></i>Save Criteria
-        </button>
-    </form>
-</div>
-<?php endif; ?>
-<?php endif; ?>
 
 <!-- Courses Table -->
 <div class="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden">

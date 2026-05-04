@@ -9,13 +9,13 @@ include ROOT_PATH . '/views/components/layout.php';
 <div class="mb-6 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
     <div>
         <h2 class="text-xl font-bold text-slate-800">Marks Entry</h2>
-        <p class="text-sm text-slate-500 mt-0.5">Enter and manage student marks</p>
+        <p class="text-sm text-slate-500 mt-0.5">Manage assessments and student marks</p>
     </div>
     <!-- Course Selector -->
     <form method="GET" action="" class="flex gap-2 items-center">
         <select name="cc" onchange="this.form.submit()"
-                class="px-3 py-2.5 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 min-w-[200px]">
-            <option value="">Select a course...</option>
+                class="px-3 py-2.5 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 min-w-[250px]">
+            <option value="">Select a module...</option>
             <?php foreach ($courses ?? [] as $c): ?>
             <option value="<?= $c['class_course_id'] ?>" <?= ($selectedCcId == $c['class_course_id']) ? 'selected' : '' ?>>
                 <?= e($c['course_name'].' ('.$c['class_name'].')') ?>
@@ -25,157 +25,256 @@ include ROOT_PATH . '/views/components/layout.php';
     </form>
 </div>
 
-<?php if ($selectedCcId && !empty($students)): ?>
-<div class="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden">
-    <div class="px-5 py-4 border-b border-slate-100 flex items-center justify-between">
-        <div>
-            <h3 class="font-semibold text-slate-800"><?= e($courseName ?? '') ?></h3>
-            <p class="text-xs text-slate-400 mt-0.5">
-                Weights — Assignments: <?= $criteria['assignments_weight'] ?? 20 ?>% |
-                Quizzes: <?= $criteria['quizzes_weight'] ?? 10 ?>% |
-                Midterm: <?= $criteria['midterm_weight'] ?? 30 ?>% |
-                Final: <?= $criteria['final_weight'] ?? 40 ?>% |
-                Pass: <?= $criteria['passing_score'] ?? 50 ?>
-            </p>
+<?php if ($selectedCcId): ?>
+<div class="grid grid-cols-1 lg:grid-cols-4 gap-6">
+    <!-- Sidebar: Assessments List -->
+    <div class="lg:col-span-1 space-y-4">
+        <div class="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden">
+            <div class="px-4 py-3 border-b border-slate-100 bg-slate-50 flex justify-between items-center">
+                <h3 class="font-semibold text-slate-800 text-sm">Assessments</h3>
+                <button onclick="openAssessmentModal()" class="text-indigo-600 hover:text-indigo-700 text-xs font-bold">
+                    <i class="fa-solid fa-plus"></i> NEW
+                </button>
+            </div>
+            <div class="divide-y divide-slate-50 max-h-[500px] overflow-y-auto">
+                <?php foreach ($assessments as $asmt): ?>
+                <a href="?cc=<?= $selectedCcId ?>&assessment_id=<?= $asmt['id'] ?>" 
+                   class="block px-4 py-3 hover:bg-slate-50 transition-colors <?= ($assessmentId == $asmt['id']) ? 'bg-indigo-50 border-l-4 border-indigo-500' : '' ?>">
+                    <div class="flex justify-between items-start mb-1">
+                        <span class="text-xs font-bold uppercase text-slate-400"><?= e($asmt['assessment_type']) ?> #<?= $asmt['assessment_number'] ?></span>
+                        <span class="text-[10px] bg-slate-100 px-1.5 py-0.5 rounded text-slate-500"><?= e($asmt['date_of_assessment']) ?></span>
+                    </div>
+                    <div class="text-sm font-medium text-slate-700"><?= e($asmt['assessment_name'] ?: 'Assessment '.$asmt['assessment_number']) ?></div>
+                    <div class="text-[11px] text-slate-400 mt-1">Max Marks: <?= $asmt['max_marks'] ?></div>
+                </a>
+                <?php endforeach; ?>
+                <?php if (empty($assessments)): ?>
+                <div class="px-4 py-8 text-center text-slate-400 text-sm">
+                    No assessments created yet.
+                </div>
+                <?php endif; ?>
+            </div>
         </div>
-        <?php if (!empty($canPublish)): ?>
-        <form method="POST" action="<?= BASE_URL ?>/teacher/marks.php">
-            <input type="hidden" name="csrf_token" value="<?= generateCsrfToken() ?>">
-            <input type="hidden" name="form_action" value="publish">
-            <input type="hidden" name="class_course_id" value="<?= $selectedCcId ?>">
-            <button type="submit" onclick="return confirm('Publish all draft results? This cannot be undone.')"
-                    class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg text-sm font-semibold transition-colors flex items-center gap-2">
-                <i class="fa-solid fa-paper-plane"></i> Publish Results
-            </button>
-        </form>
-        <?php endif; ?>
+
+        <div class="bg-indigo-600 rounded-2xl p-4 text-white shadow-lg shadow-indigo-200">
+            <div class="text-xs opacity-80 uppercase font-bold mb-1">Module Weight</div>
+            <div class="text-2xl font-bold"><?= $moduleWeight ?></div>
+            <div class="text-[10px] opacity-70 mt-2">Sum of formative assessments should match this weight.</div>
+        </div>
     </div>
 
-    <form method="POST" action="<?= BASE_URL ?>/teacher/marks.php" id="marksForm">
-        <input type="hidden" name="csrf_token" value="<?= generateCsrfToken() ?>">
-        <input type="hidden" name="form_action" value="save_marks">
-        <input type="hidden" name="class_course_id" value="<?= $selectedCcId ?>">
+    <!-- Main Content: Mark Entry or Summary -->
+    <div class="lg:col-span-3 space-y-6">
+        <?php if ($assessmentId && $currentAssessment): ?>
+        <!-- Assessment Mark Entry -->
+        <div class="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden">
+            <div class="px-5 py-4 border-b border-slate-100 flex items-center justify-between bg-white">
+                <div>
+                    <h3 class="font-semibold text-slate-800">
+                        Enter Marks: <?= e($currentAssessment['assessment_name'] ?: ucfirst($currentAssessment['assessment_type']).' #'.$currentAssessment['assessment_number']) ?>
+                    </h3>
+                    <p class="text-xs text-slate-500">Date: <?= e($currentAssessment['date_of_assessment']) ?> | Max Marks: <?= e($currentAssessment['max_marks']) ?></p>
+                </div>
+                <a href="?cc=<?= $selectedCcId ?>" class="text-slate-400 hover:text-slate-600">
+                    <i class="fa-solid fa-xmark"></i>
+                </a>
+            </div>
 
-        <div class="overflow-x-auto">
-            <table class="w-full text-sm">
-                <thead class="bg-slate-50 text-slate-500 text-xs uppercase tracking-wider">
-                    <tr>
-                        <th class="px-4 py-3 text-left">Student</th>
-                        <th class="px-4 py-3 text-center">Assignments<br><span class="text-xs font-normal text-slate-400">/100</span></th>
-                        <th class="px-4 py-3 text-center">Quizzes<br><span class="text-xs font-normal text-slate-400">/100</span></th>
-                        <th class="px-4 py-3 text-center">Midterm<br><span class="text-xs font-normal text-slate-400">/100</span></th>
-                        <th class="px-4 py-3 text-center">Final<br><span class="text-xs font-normal text-slate-400">/100</span></th>
-                        <th class="px-4 py-3 text-center">Grade</th>
-                        <th class="px-4 py-3 text-center">Result</th>
-                        <th class="px-4 py-3 text-center">Remarks</th>
-                        <th class="px-4 py-3 text-center">Supplementary</th>
-                        <th class="px-4 py-3 text-center">Actions</th>
-                    </tr>
-                </thead>
-                <tbody class="divide-y divide-slate-50">
-                    <?php foreach ($students as $s): ?>
-                    <?php $isPublished = ($s['mark_status'] === 'published'); ?>
-                    <tr class="hover:bg-slate-50 <?= $isPublished ? 'bg-green-50/30' : '' ?>">
-                        <td class="px-4 py-3">
-                            <div class="font-medium"><?= e($s['first_name'].' '.$s['last_name']) ?></div>
-                            <div class="text-xs text-slate-400"><?= e($s['student_id']) ?></div>
-                        </td>
-                        <?php
-                        $fields = ['assignments_score','quizzes_score','midterm_score','final_score'];
-                        foreach ($fields as $f):
-                        ?>
-                        <td class="px-2 py-2 text-center">
-                            <?php if ($isPublished): ?>
-                            <span class="text-slate-600"><?= $s[$f] !== null ? number_format((float)$s[$f],1) : '—' ?></span>
-                            <?php else: ?>
-                            <input type="number" name="marks[<?= $s['id'] ?>][<?= $f ?>]"
-                                   value="<?= $s[$f] !== null ? $s[$f] : '' ?>"
-                                   min="0" max="100" step="0.5"
-                                   class="w-16 px-2 py-1 border border-slate-200 rounded-lg text-center text-sm focus:outline-none focus:ring-2 focus:ring-blue-400"
-                                   placeholder="—">
-                            <?php endif; ?>
-                        </td>
-                        <?php endforeach; ?>
-                        <td class="px-4 py-3 text-center">
-                            <?php if ($s['calculated_grade'] !== null): ?>
-                            <div class="font-bold text-lg <?= ($s['is_pass']) ? 'text-green-600' : 'text-red-600' ?>">
-                                <?= number_format((float)$s['calculated_grade'],1) ?>
-                            </div>
-                            <div class="text-xs font-semibold <?= ($s['is_pass']) ? 'text-green-500' : 'text-red-500' ?>">
-                                <?= e($s['letter_grade'] ?? '') ?>
-                            </div>
-                            <?php else: ?>
-                            <span class="text-slate-300">—</span>
-                            <?php endif; ?>
-                        </td>
-                        <td class="px-4 py-3 text-center">
-                            <?php if ($s['is_pass'] !== null): ?>
-                            <span class="badge <?= $s['is_pass'] ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700' ?>">
-                                <?= $s['is_pass'] ? 'PASS' : 'FAIL' ?>
-                            </span>
-                            <?php else: ?>
-                            <span class="text-slate-300">—</span>
-                            <?php endif; ?>
-                        </td>
-                        <td class="px-2 py-2">
-                            <?php if ($isPublished): ?>
-                            <span class="text-xs text-slate-400"><?= e($s['remarks'] ?? '') ?></span>
-                            <?php else: ?>
-                            <input type="text" name="marks[<?= $s['id'] ?>][remarks]"
-                                   value="<?= e($s['remarks'] ?? '') ?>"
-                                   class="w-full px-2 py-1 border border-slate-200 rounded-lg text-xs focus:outline-none focus:ring-1 focus:ring-blue-400"
-                                   placeholder="Optional">
-                            <?php endif; ?>
-                        </td>
-                        <td class="px-4 py-3 text-center">
-                            <?php if ($s['is_supplementary']): ?>
-                                <span class="text-xs text-slate-500">Score: <?= $s['supplementary_score'] !== null ? number_format((float)$s['supplementary_score'],1) : '—' ?></span>
-                            <?php elseif ($s['status'] === 'published' && $s['is_pass'] === 0): ?>
-                                <form method="POST" action="<?= BASE_URL ?>/teacher/marks.php?cc=<?= $selectedCcId ?>" class="flex items-center gap-2 justify-center">
-                                    <input type="hidden" name="csrf_token" value="<?= generateCsrfToken() ?>">
-                                    <input type="hidden" name="form_action" value="submit_supplementary">
-                                    <input type="hidden" name="mark_id" value="<?= $s['mark_id'] ?>">
-                                    <input type="number" name="supplementary_score" min="0" max="100" step="0.5"
-                                           class="w-20 px-2 py-1 border border-slate-200 rounded-lg text-center text-sm focus:outline-none focus:ring-2 focus:ring-blue-400"
-                                           placeholder="Score" required>
-                                    <button type="submit" class="px-2 py-1 bg-orange-600 hover:bg-orange-700 text-white rounded-lg text-xs">Submit</button>
-                                </form>
-                            <?php else: ?>
-                                <span class="text-slate-400">—</span>
-                            <?php endif; ?>
-                        </td>
-                        <td class="px-4 py-3 text-center">
-                            <?php if ($isPublished): ?>
-                            <span class="badge bg-green-100 text-green-700"><i class="fa-solid fa-check mr-1"></i>Published</span>
-                            <?php else: ?>
-                            <div class="flex gap-1 justify-center">
-                                <?php if ($s['mark_id']): ?>
-                                <form method="POST" action="<?= BASE_URL ?>/teacher/marks.php">
-                                    <input type="hidden" name="csrf_token" value="<?= generateCsrfToken() ?>">
-                                    <input type="hidden" name="form_action" value="delete_mark">
-                                    <input type="hidden" name="mark_id" value="<?= $s['mark_id'] ?>">
-                                    <button type="submit" onclick="return confirm('Delete this mark?')"
-                                            class="p-1.5 text-red-500 hover:bg-red-50 rounded-lg transition-colors" title="Delete">
-                                        <i class="fa-solid fa-trash text-xs"></i>
-                                    </button>
-                                </form>
-                                <?php endif; ?>
-                            </div>
-                            <?php endif; ?>
-                        </td>
-                    </tr>
-                    <?php endforeach; ?>
-                </tbody>
-            </table>
+            <form method="POST" action="<?= BASE_URL ?>/teacher/marks.php">
+                <input type="hidden" name="csrf_token" value="<?= generateCsrfToken() ?>">
+                <input type="hidden" name="form_action" value="save_assessment_marks">
+                <input type="hidden" name="class_course_id" value="<?= $selectedCcId ?>">
+                <input type="hidden" name="assessment_id" value="<?= $assessmentId ?>">
+
+                <div class="overflow-x-auto">
+                    <table class="w-full text-sm">
+                        <thead class="bg-slate-50 text-slate-500 text-xs uppercase tracking-wider">
+                            <tr>
+                                <th class="px-6 py-3 text-left">Student</th>
+                                <th class="px-6 py-3 text-center">Score / <?= $currentAssessment['max_marks'] ?></th>
+                                <th class="px-6 py-3 text-center">Percentage</th>
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y divide-slate-50">
+                            <?php foreach ($students as $s): ?>
+                            <tr class="hover:bg-slate-50 transition-colors">
+                                <td class="px-6 py-3">
+                                    <div class="font-medium"><?= e($s['first_name'].' '.$s['last_name']) ?></div>
+                                    <div class="text-xs text-slate-400"><?= e($s['student_id']) ?></div>
+                                </td>
+                                <td class="px-6 py-3 text-center">
+                                    <input type="number" name="marks[<?= $s['id'] ?>]" 
+                                           value="<?= isset($assessmentMarks[$s['id']]) ? $assessmentMarks[$s['id']] : '' ?>"
+                                           min="0" max="<?= $currentAssessment['max_marks'] ?>" step="0.5"
+                                           class="w-24 px-3 py-2 border border-slate-200 rounded-lg text-center text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                                           placeholder="—">
+                                </td>
+                                <td class="px-6 py-3 text-center">
+                                    <?php if (isset($assessmentMarks[$s['id']])): ?>
+                                    <span class="text-slate-500 font-medium">
+                                        <?= number_format(($assessmentMarks[$s['id']] / $currentAssessment['max_marks']) * 100, 1) ?>%
+                                    </span>
+                                    <?php else: ?>
+                                    <span class="text-slate-300">—</span>
+                                    <?php endif; ?>
+                                </td>
+                            </tr>
+                            <?php endforeach; ?>
+                        </tbody>
+                    </table>
+                </div>
+                <div class="px-6 py-4 border-t border-slate-100 bg-slate-50 flex justify-end">
+                    <button type="submit" class="bg-indigo-600 hover:bg-indigo-700 text-white px-6 py-2.5 rounded-lg text-sm font-semibold transition-colors flex items-center gap-2">
+                        <i class="fa-solid fa-floppy-disk"></i> Save Marks
+                    </button>
+                </div>
+            </form>
         </div>
+        <?php else: ?>
+        <!-- Module Summary Table -->
+        <div class="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden">
+            <div class="px-5 py-4 border-b border-slate-100 flex items-center justify-between">
+                <h3 class="font-semibold text-slate-800">Module Marks Summary</h3>
+                <div class="flex gap-2">
+                    <?php if (!empty($canPublish)): ?>
+                    <form method="POST" action="<?= BASE_URL ?>/teacher/marks.php">
+                        <input type="hidden" name="csrf_token" value="<?= generateCsrfToken() ?>">
+                        <input type="hidden" name="form_action" value="publish">
+                        <input type="hidden" name="class_course_id" value="<?= $selectedCcId ?>">
+                        <button type="submit" onclick="return confirm('Publish all results for this module?')"
+                                class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg text-sm font-semibold transition-colors">
+                            Publish All
+                        </button>
+                    </form>
+                    <?php endif; ?>
+                </div>
+            </div>
 
-        <div class="px-5 py-4 border-t border-slate-100 bg-slate-50 flex justify-end">
-            <button type="submit" class="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2.5 rounded-lg text-sm font-semibold transition-colors flex items-center gap-2">
-                <i class="fa-solid fa-floppy-disk"></i> Save All Marks
+            <div class="overflow-x-auto">
+                <table class="w-full text-sm">
+                    <thead class="bg-slate-50 text-slate-500 text-xs uppercase tracking-wider">
+                        <tr>
+                            <th class="px-4 py-4 text-left">Student</th>
+                            <th class="px-4 py-4 text-center">Formative Assessment<br><span class="text-[10px] font-normal text-slate-400">Sum of FA</span></th>
+                            <th class="px-4 py-4 text-center">Integrated Assessment<br><span class="text-[10px] font-normal text-slate-400">Sum of IA</span></th>
+                            <th class="px-4 py-4 text-center">Comprehensive Assessment<br><span class="text-[10px] font-normal text-slate-400">CA Mark</span></th>
+                            <th class="px-4 py-4 text-center font-bold text-slate-700">Average Marks<br><span class="text-[10px] font-normal text-slate-400">(FA+IA+CA)/N</span></th>
+                            <th class="px-4 py-4 text-center">Result</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-slate-50">
+                        <?php foreach ($students as $s): ?>
+                        <tr class="hover:bg-slate-50 transition-colors">
+                            <td class="px-4 py-3">
+                                <div class="font-medium"><?= e($s['first_name'].' '.$s['last_name']) ?></div>
+                                <div class="text-xs text-slate-400"><?= e($s['student_id']) ?></div>
+                            </td>
+                            <td class="px-4 py-3 text-center text-slate-600"><?= $s['formative_score'] !== null ? number_format($s['formative_score'], 1) : '<span class="text-slate-300">N/A</span>' ?></td>
+                            <td class="px-4 py-3 text-center text-slate-600"><?= $s['integrated_score'] !== null ? number_format($s['integrated_score'], 1) : '<span class="text-slate-300">N/A</span>' ?></td>
+                            <td class="px-4 py-3 text-center text-slate-600"><?= $s['comprehensive_score'] !== null ? number_format($s['comprehensive_score'], 1) : '<span class="text-slate-300">N/A</span>' ?></td>
+                            <td class="px-4 py-3 text-center">
+                                <?php if ($s['calculated_grade'] !== null): ?>
+                                <div class="font-bold text-base <?= ($s['is_pass']) ? 'text-indigo-600' : 'text-red-600' ?>">
+                                    <?= number_format((float)$s['calculated_grade'], 1) ?>
+                                </div>
+                                <div class="text-[10px] font-bold uppercase <?= ($s['is_pass']) ? 'text-indigo-400' : 'text-red-400' ?>">
+                                    Grade: <?= e($s['letter_grade'] ?? '') ?>
+                                </div>
+                                <?php else: ?>
+                                <span class="text-slate-300">—</span>
+                                <?php endif; ?>
+                            </td>
+                            <td class="px-4 py-3 text-center">
+                                <?php if ($s['is_pass'] !== null): ?>
+                                <span class="badge <?= $s['is_pass'] ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700' ?>">
+                                    <?= $s['is_pass'] ? 'COMPETENT' : 'NOT YET' ?>
+                                </span>
+                                <?php else: ?>
+                                <span class="text-slate-300">—</span>
+                                <?php endif; ?>
+                            </td>
+                        </tr>
+                        <?php endforeach; ?>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        <?php endif; ?>
+    </div>
+</div>
+
+<!-- Assessment Modal -->
+<div id="assessmentModal" class="hidden fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+    <div class="bg-white rounded-2xl p-6 w-full max-w-md shadow-2xl mx-4">
+        <div class="flex justify-between items-center mb-6">
+            <h3 class="text-lg font-bold text-slate-800">Create New Assessment</h3>
+            <button onclick="closeAssessmentModal()" class="text-slate-400 hover:text-slate-600">
+                <i class="fa-solid fa-xmark"></i>
             </button>
         </div>
-    </form>
+        <form method="POST" action="<?= BASE_URL ?>/teacher/marks.php">
+            <input type="hidden" name="csrf_token" value="<?= generateCsrfToken() ?>">
+            <input type="hidden" name="form_action" value="create_assessment">
+            <input type="hidden" name="class_course_id" value="<?= $selectedCcId ?>">
+            
+            <div class="space-y-4">
+                <div>
+                    <label class="block text-sm font-medium text-slate-700 mb-1.5">Module</label>
+                    <input type="text" readonly value="<?= e($courseName) ?>" class="w-full px-3 py-2.5 bg-slate-50 border border-slate-200 rounded-lg text-sm text-slate-500">
+                </div>
+                
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-sm font-medium text-slate-700 mb-1.5">Type *</label>
+                        <select name="assessment_type" required class="w-full px-3 py-2.5 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                            <option value="formative">Formative</option>
+                            <option value="integrated">Integrated</option>
+                            <option value="comprehensive">Comprehensive</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-slate-700 mb-1.5">Assessment # *</label>
+                        <input type="number" name="assessment_number" required min="1" value="1"
+                               class="w-full px-3 py-2.5 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                    </div>
+                </div>
+
+                <div>
+                    <label class="block text-sm font-medium text-slate-700 mb-1.5">Assessment Name</label>
+                    <input type="text" name="assessment_name" placeholder="e.g. Mid-term Quiz"
+                           class="w-full px-3 py-2.5 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                </div>
+
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-sm font-medium text-slate-700 mb-1.5">Date *</label>
+                        <input type="date" name="date_of_assessment" required value="<?= date('Y-m-d') ?>"
+                               class="w-full px-3 py-2.5 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-slate-700 mb-1.5">Max Marks *</label>
+                        <input type="number" name="max_marks" required min="1" step="0.5" placeholder="e.g. 10"
+                               class="w-full px-3 py-2.5 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                    </div>
+                </div>
+
+                <div class="pt-4 flex gap-3">
+                    <button type="button" onclick="closeAssessmentModal()" class="flex-1 bg-slate-100 hover:bg-slate-200 text-slate-700 py-2.5 rounded-lg text-sm font-semibold transition-colors">Cancel</button>
+                    <button type="submit" class="flex-1 bg-indigo-600 hover:bg-indigo-700 text-white py-2.5 rounded-lg text-sm font-semibold transition-colors">Create</button>
+                </div>
+            </div>
+        </form>
+    </div>
 </div>
+
+<script>
+function openAssessmentModal() {
+    document.getElementById('assessmentModal').classList.remove('hidden');
+}
+function closeAssessmentModal() {
+    document.getElementById('assessmentModal').classList.add('hidden');
+}
+</script>
 
 <?php elseif ($selectedCcId): ?>
 <div class="bg-white rounded-2xl p-10 text-center text-slate-400 shadow-sm border border-slate-100">
@@ -185,7 +284,7 @@ include ROOT_PATH . '/views/components/layout.php';
 <?php else: ?>
 <div class="bg-white rounded-2xl p-10 text-center text-slate-400 shadow-sm border border-slate-100">
     <i class="fa-solid fa-book-open text-4xl mb-3 text-slate-200"></i>
-    <p>Select a course above to view and enter marks.</p>
+    <p>Select a module above to manage assessments and marks.</p>
 </div>
 <?php endif; ?>
 

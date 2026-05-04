@@ -43,7 +43,7 @@ class AdminController {
         }
         $id = $this->courseModel->create($data);
         $this->auditModel->log('course_created', 'courses', $id, null, $data);
-        return ['success' => true, 'id' => $id, 'message' => 'Course created successfully.'];
+        return ['success' => true, 'id' => $id, 'message' => 'Course created.'];
     }
 
     public function updateCourse(int $id, array $data): array {

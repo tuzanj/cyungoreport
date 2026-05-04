@@ -24,6 +24,35 @@ class TeacherController {
         $this->db           = Database::getInstance();
     }
 
+    public function createAssessment(array $data): array {
+        if (empty($data['assessment_type']) || empty($data['date_of_assessment']) || empty($data['max_marks'])) {
+            return ['success' => false, 'message' => 'Assessment type, date, and max marks are required.'];
+        }
+
+        $id = $this->markModel->createAssessment($data);
+        $this->auditModel->log('assessment_created', 'assessments', $id, null, $data);
+        return ['success' => true, 'id' => $id, 'message' => 'Assessment created successfully.'];
+    }
+
+    public function saveAssessmentMarks(int $assessmentId, array $marksData): array {
+        $saved = 0;
+        foreach ($marksData as $studentId => $score) {
+            if ($score === '') continue; // Skip empty marks
+            $this->markModel->saveAssessmentMark($assessmentId, (int)$studentId, (float)$score);
+            $saved++;
+        }
+        $this->auditModel->log('assessment_marks_saved', 'assessment_marks', $assessmentId, null, ['count' => $saved]);
+        return ['success' => true, 'saved' => $saved, 'message' => "{$saved} assessment mark(s) saved."];
+    }
+
+    public function getAssessments(int $classCourseId, int $term = 1): array {
+        return $this->markModel->getAssessments($classCourseId, $term);
+    }
+
+    public function getAssessmentMarks(int $assessmentId): array {
+        return $this->markModel->getAssessmentMarks($assessmentId);
+    }
+
     public function saveMarks(int $classCourseId, array $marksData): array {
         $saved = 0;
         foreach ($marksData as $studentId => $scores) {

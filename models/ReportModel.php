@@ -31,15 +31,32 @@ class ReportModel extends BaseModel {
 
         // Get all marks/courses for the term
         $marks = $this->db->fetchAll(
-            "SELECT m.*, c.code, c.name, t.first_name as teacher_fname, t.last_name as teacher_lname
+            "SELECT m.*, c.code, c.name, c.type, c.module_weight, t.first_name as teacher_fname, t.last_name as teacher_lname
              FROM marks m
              JOIN class_courses cc ON cc.id = m.class_course_id
              JOIN courses c ON c.id = cc.course_id
              LEFT JOIN teachers t ON t.id = cc.teacher_id
              WHERE m.student_id = ? AND cc.academic_year_id = ?
-             ORDER BY c.name",
+             ORDER BY c.type, c.name",
             [$studentId, $academicYearId]
         );
+
+        // Group marks by module category
+        $groupedMarks = [
+            'complementary' => [],
+            'general' => [],
+            'specific' => [],
+            'co-curricular' => []
+        ];
+
+        foreach ($marks as $mark) {
+            $type = $mark['type'] ?? 'specific';
+            if (isset($groupedMarks[$type])) {
+                $groupedMarks[$type][] = $mark;
+            } else {
+                $groupedMarks['specific'][] = $mark;
+            }
+        }
 
         // Get behavior records
         $behavior = $this->db->fetchOne(
@@ -61,6 +78,7 @@ class ReportModel extends BaseModel {
             'student' => $student,
             'enrollment' => $enrollment,
             'marks' => $marks,
+            'grouped_marks' => $groupedMarks,
             'behavior' => $behavior,
             'school' => $schoolInfo
         ];
