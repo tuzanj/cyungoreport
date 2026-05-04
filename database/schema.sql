@@ -58,10 +58,12 @@ CREATE TABLE classes (
     name VARCHAR(50) NOT NULL,
     grade_level VARCHAR(20),
     section VARCHAR(10),
+    trade_id INT,
     academic_year_id INT NOT NULL,
     max_students INT DEFAULT 40,
     created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-    FOREIGN KEY (academic_year_id) REFERENCES academic_years(id)
+    FOREIGN KEY (academic_year_id) REFERENCES academic_years(id),
+    FOREIGN KEY (trade_id) REFERENCES trades(id) ON DELETE SET NULL
 );
 
 CREATE TABLE courses (

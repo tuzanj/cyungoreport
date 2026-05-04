@@ -8,9 +8,9 @@ class ClassModel extends BaseModel {
 
     public function create(array $data): int {
         return $this->db->insert(
-            "INSERT INTO classes (name, grade_level, section, academic_year_id, max_students) VALUES (?,?,?,?,?)",
+            "INSERT INTO classes (name, grade_level, section, trade_id, academic_year_id, max_students) VALUES (?,?,?,?,?,?)",
             [$data['name'], $data['grade_level'] ?? null, $data['section'] ?? null,
-             $data['academic_year_id'], $data['max_students'] ?? 40]
+             $data['trade_id'] ?? null, $data['academic_year_id'], $data['max_students'] ?? 40]
         );
     }
 

@@ -37,7 +37,12 @@ class CourseModel extends BaseModel {
     }
 
     public function getAllWithDept(): array {
-        return $this->getAllWithTrade();
+        return $this->db->fetchAll(
+            "SELECT c.*, t.name as trade_name
+             FROM courses c
+             LEFT JOIN trades t ON t.id = c.trade_id
+             ORDER BY c.type, c.code"
+        );
     }
 
     public function setGradingCriteria(int $courseId, int $yearId, array $data): void {

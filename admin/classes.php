@@ -18,6 +18,7 @@ $db         = Database::getInstance();
 $currentYear   = $db->fetchOne("SELECT * FROM academic_years WHERE is_current=1 LIMIT 1");
 $currentYearId = $currentYear ? (int)$currentYear['id'] : 0;
 $years         = $db->fetchAll("SELECT * FROM academic_years ORDER BY start_date DESC");
+$trades        = $db->fetchAll("SELECT * FROM trades ORDER BY name");
 $action        = $_GET['action'] ?? '';
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
@@ -32,6 +33,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             'name'             => trim($_POST['name'] ?? ''),
             'grade_level'      => trim($_POST['grade_level'] ?? ''),
             'section'          => trim($_POST['section'] ?? ''),
+            'trade_id'         => (int)($_POST['trade_id'] ?? 0),
             'academic_year_id' => (int)($_POST['academic_year_id'] ?? $currentYearId),
             'max_students'     => (int)($_POST['max_students'] ?? 40),
         ]);
@@ -87,6 +89,15 @@ include ROOT_PATH . '/views/components/layout.php';
                 <label class="block text-sm font-medium text-slate-700 mb-1.5">Section</label>
                 <input type="text" name="section" placeholder="e.g. A"
                        class="w-full px-3 py-2.5 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500">
+            </div>
+            <div>
+                <label class="block text-sm font-medium text-slate-700 mb-1.5">Trade *</label>
+                <select name="trade_id" required class="w-full px-3 py-2.5 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                    <option value="">Select trade...</option>
+                    <?php foreach ($trades as $t): ?>
+                    <option value="<?= $t['id'] ?>"><?= e($t['name']) ?></option>
+                    <?php endforeach; ?>
+                </select>
             </div>
             <div>
                 <label class="block text-sm font-medium text-slate-700 mb-1.5">Max Students</label>
