@@ -268,14 +268,28 @@ class MarkModel extends BaseModel {
     }
 
     public function submitSupplementary(int $markId, float $score, string $letterGrade): void {
+        $mark = $this->findById($markId);
+        if (!$mark) return;
+
+        $module = $this->db->fetchOne(
+            "SELECT c.* FROM courses c
+             JOIN class_courses cc ON cc.course_id = c.id
+             WHERE cc.id = ?",
+            [$mark['class_course_id']]
+        );
+
+        $passingPercentage = 0.70;
+        if ($module && in_array($module['type'], ['complementary', 'general'])) {
+            $passingPercentage = 0.50;
+        }
+
+        $moduleWeight = $module ? (float)$module['module_weight'] : 100;
+        $isPass = ($score >= ($moduleWeight * $passingPercentage)) ? 1 : 0;
+
         $this->db->execute(
-            "UPDATE marks SET supplementary_score=?, is_supplementary=1, calculated_grade=?, letter_grade=?,
-             is_pass = IF(? >= (SELECT gc.passing_score FROM grading_criteria gc
-                                JOIN class_courses cc ON cc.course_id = gc.course_id
-                                WHERE cc.id = (SELECT class_course_id FROM marks WHERE id=? )
-                                LIMIT 1), 1, 0)
+            "UPDATE marks SET supplementary_score=?, is_supplementary=1, calculated_grade=?, letter_grade=?, is_pass=?
              WHERE id=?",
-            [$score, $score, $letterGrade, $score, $markId, $markId]
+            [$score, $score, $letterGrade, $isPass, $markId]
         );
     }
 

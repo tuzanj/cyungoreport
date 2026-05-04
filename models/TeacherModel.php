@@ -58,8 +58,8 @@ class TeacherModel extends BaseModel {
     public function getStudentsInCourse(int $classCourseId): array {
         return $this->db->fetchAll(
             "SELECT s.id, s.student_id, s.first_name, s.last_name,
-                    m.id as mark_id, m.assignments_score, m.quizzes_score,
-                    m.midterm_score, m.final_score, m.calculated_grade,
+                    m.id as mark_id, m.formative_score, m.integrated_score,
+                    m.comprehensive_score, m.calculated_grade,
                     m.letter_grade, m.status as mark_status, m.is_pass,
                     m.is_supplementary, m.supplementary_score, m.remarks
              FROM class_courses cc

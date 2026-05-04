@@ -24,14 +24,14 @@ $typeBadge = [
     </a>
 </div>
 
-<?php if (in_array($action ?? '', ['new','edit'])): ?>
+<?php if (isset($action) && in_array($action, ['new','edit'])): ?>
 <!-- Course Form -->
 <div class="bg-white rounded-2xl shadow-sm border border-slate-100 p-6 mb-6">
     <h3 class="font-semibold text-slate-800 mb-4"><?= ($action === 'edit') ? 'Edit Course' : 'Add New Course' ?></h3>
-    <form method="POST" action="<?= BASE_URL ?>/admin/courses.php">
-        <input type="hidden" name="csrf_token" value="<?= generateCsrfToken() ?>">
+    <form method="POST" action="<?= defined('BASE_URL') ? BASE_URL : '' ?>/admin/courses.php">
+        <input type="hidden" name="csrf_token" value="<?= function_exists('generateCsrfToken') ? generateCsrfToken() : '' ?>">
         <input type="hidden" name="form_action" value="<?= ($action === 'edit') ? 'update' : 'create' ?>">
-        <?php if ($action === 'edit'): ?>
+        <?php if ($action === 'edit' && isset($course['id'])): ?>
         <input type="hidden" name="course_id" value="<?= e($course['id']) ?>">
         <?php endif; ?>
 
@@ -71,9 +71,9 @@ $typeBadge = [
                 <label class="block text-sm font-medium text-slate-700 mb-1.5">Trade</label>
                 <select name="trade_id" class="w-full px-3 py-2.5 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500">
                     <option value="">— None —</option>
-                    <?php foreach ($departments as $d): ?>
+                    <?php if (isset($departments)): foreach ($departments as $d): ?>
                     <option value="<?= $d['id'] ?>" <?= (($course['trade_id'] ?? '') == $d['id']) ? 'selected' : '' ?>><?= e($d['name']) ?></option>
-                    <?php endforeach; ?>
+                    <?php endforeach; endif; ?>
                 </select>
             </div>
             <div>
@@ -88,7 +88,7 @@ $typeBadge = [
             <button type="submit" class="bg-indigo-600 hover:bg-indigo-700 text-white px-5 py-2.5 rounded-lg text-sm font-semibold transition-colors">
                 <i class="fa-solid fa-floppy-disk mr-1"></i><?= ($action === 'edit') ? 'Update Course' : 'Create Course' ?>
             </button>
-            <a href="<?= BASE_URL ?>/admin/courses.php" class="bg-slate-100 hover:bg-slate-200 text-slate-700 px-5 py-2.5 rounded-lg text-sm font-semibold transition-colors">Cancel</a>
+            <a href="<?= defined('BASE_URL') ? BASE_URL : '' ?>/admin/courses.php" class="bg-slate-100 hover:bg-slate-200 text-slate-700 px-5 py-2.5 rounded-lg text-sm font-semibold transition-colors">Cancel</a>
         </div>
     </form>
 </div>
@@ -97,7 +97,7 @@ $typeBadge = [
 <!-- Courses Table -->
 <div class="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden">
     <div class="px-5 py-4 border-b border-slate-100">
-        <h3 class="font-semibold text-slate-800">All Courses <span class="text-slate-400 font-normal text-sm">(<?= count($courses) ?>)</span></h3>
+        <h3 class="font-semibold text-slate-800">All Courses <span class="text-slate-400 font-normal text-sm">(<?= isset($courses) ? count($courses) : 0 ?>)</span></h3>
     </div>
     <div class="overflow-x-auto">
         <table class="w-full text-sm">
@@ -112,28 +112,28 @@ $typeBadge = [
                 </tr>
             </thead>
             <tbody class="divide-y divide-slate-50">
-                <?php foreach ($courses as $c): ?>
+                <?php if (isset($courses)): foreach ($courses as $c): ?>
                 <tr class="hover:bg-slate-50 transition-colors">
-                    <td class="px-5 py-3 font-mono font-semibold text-indigo-700"><?= e($c['code']) ?></td>
-                    <td class="px-5 py-3 font-medium"><?= e($c['name']) ?></td>
+                    <td class="px-5 py-3 font-mono font-semibold text-indigo-700"><?= e($c['code'] ?? '') ?></td>
+                    <td class="px-5 py-3 font-medium"><?= e($c['name'] ?? '') ?></td>
                     <td class="px-5 py-3">
-                        <span class="badge <?= $typeBadge[$c['type']] ?? 'bg-slate-100 text-slate-600' ?>"><?= ucfirst($c['type']) ?></span>
+                        <span class="badge <?= isset($c['type']) ? ($typeBadge[$c['type']] ?? 'bg-slate-100 text-slate-600') : 'bg-slate-100 text-slate-600' ?>"><?= ucfirst($c['type'] ?? 'specific') ?></span>
                     </td>
-                    <td class="px-5 py-3 text-slate-600"><?= $c['credits'] ?></td>
+                    <td class="px-5 py-3 text-slate-600"><?= $c['credits'] ?? 0 ?></td>
                     <td class="px-5 py-3 text-slate-500"><?= e($c['trade_name'] ?? '—') ?></td>
                     <td class="px-5 py-3">
                         <div class="flex gap-2">
-                            <a href="?action=edit&id=<?= $c['id'] ?>" class="p-1.5 text-indigo-600 hover:bg-indigo-50 rounded-lg transition-colors" title="Edit">
+                            <a href="?action=edit&id=<?= $c['id'] ?? 0 ?>" class="p-1.5 text-indigo-600 hover:bg-indigo-50 rounded-lg transition-colors" title="Edit">
                                 <i class="fa-solid fa-pen-to-square"></i>
                             </a>
-                            <button onclick="confirmDelete(<?= $c['id'] ?>, '<?= e($c['name']) ?>')"
+                            <button onclick="confirmDelete(<?= $c['id'] ?? 0 ?>, '<?= addslashes(e($c['name'] ?? '')) ?>')"
                                     class="p-1.5 text-red-500 hover:bg-red-50 rounded-lg transition-colors" title="Delete">
                                 <i class="fa-solid fa-trash"></i>
                             </button>
                         </div>
                     </td>
                 </tr>
-                <?php endforeach; ?>
+                <?php endforeach; endif; ?>
                 <?php if (empty($courses)): ?>
                 <tr><td colspan="6" class="px-5 py-10 text-center text-slate-400">No courses found. <a href="?action=new" class="text-indigo-600 hover:underline">Create one</a></td></tr>
                 <?php endif; ?>
@@ -152,8 +152,8 @@ $typeBadge = [
             <h3 class="text-lg font-semibold text-slate-800">Delete Course?</h3>
             <p class="text-sm text-slate-500 mt-1">This will permanently delete <strong id="deleteCourseName"></strong>.</p>
         </div>
-        <form method="POST" action="<?= BASE_URL ?>/admin/courses.php" id="deleteForm">
-            <input type="hidden" name="csrf_token" value="<?= generateCsrfToken() ?>">
+        <form method="POST" action="<?= defined('BASE_URL') ? BASE_URL : '' ?>/admin/courses.php" id="deleteForm">
+            <input type="hidden" name="csrf_token" value="<?= function_exists('generateCsrfToken') ? generateCsrfToken() : '' ?>">
             <input type="hidden" name="form_action" value="delete">
             <input type="hidden" name="course_id" id="deleteCourseId">
             <div class="flex gap-3">
