@@ -1,10 +1,17 @@
 <?php
 // views/admin/courses.php
-// Variables: $courses, $departments, $years, $action, $course (for edit)
+// Variables: $courses, $departments, $action, $course (for edit)
 $pageTitle  = 'Courses';
 $activePage = '/admin/courses.php';
 $role = 'admin';
 include ROOT_PATH . '/views/components/layout.php';
+
+$typeBadge = [
+    'complementary' => 'bg-blue-100 text-blue-700',
+    'general'       => 'bg-green-100 text-green-700',
+    'specific'      => 'bg-indigo-100 text-indigo-700',
+    'co-curricular' => 'bg-purple-100 text-purple-700'
+];
 ?>
 
 <div class="flex items-center justify-between mb-6">
@@ -100,7 +107,7 @@ include ROOT_PATH . '/views/components/layout.php';
                     <th class="px-5 py-3 text-left">Name</th>
                     <th class="px-5 py-3 text-left">Type</th>
                     <th class="px-5 py-3 text-left">Credits</th>
-                    <th class="px-5 py-3 text-left">Department</th>
+                    <th class="px-5 py-3 text-left">Trade</th>
                     <th class="px-5 py-3 text-left">Actions</th>
                 </tr>
             </thead>
@@ -110,18 +117,10 @@ include ROOT_PATH . '/views/components/layout.php';
                     <td class="px-5 py-3 font-mono font-semibold text-indigo-700"><?= e($c['code']) ?></td>
                     <td class="px-5 py-3 font-medium"><?= e($c['name']) ?></td>
                     <td class="px-5 py-3">
-                        <?php 
-                        $typeBadge = [
-                            'complementary' => 'bg-blue-100 text-blue-700',
-                            'general'       => 'bg-green-100 text-green-700',
-                            'specific'      => 'bg-indigo-100 text-indigo-700',
-                            'co-curricular' => 'bg-purple-100 text-purple-700'
-                        ]; 
-                        ?>
                         <span class="badge <?= $typeBadge[$c['type']] ?? 'bg-slate-100 text-slate-600' ?>"><?= ucfirst($c['type']) ?></span>
                     </td>
                     <td class="px-5 py-3 text-slate-600"><?= $c['credits'] ?></td>
-                    <td class="px-5 py-3 text-slate-500"><?= e($c['department_name'] ?? '—') ?></td>
+                    <td class="px-5 py-3 text-slate-500"><?= e($c['trade_name'] ?? '—') ?></td>
                     <td class="px-5 py-3">
                         <div class="flex gap-2">
                             <a href="?action=edit&id=<?= $c['id'] ?>" class="p-1.5 text-indigo-600 hover:bg-indigo-50 rounded-lg transition-colors" title="Edit">
@@ -175,5 +174,4 @@ function closeModal() {
 }
 </script>
 
-<?php include ROOT_PATH . '/views/components/footer.php'; 
-?>
+<?php include ROOT_PATH . '/views/components/footer.php'; ?>
