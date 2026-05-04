@@ -43,6 +43,17 @@ class AdminController {
                 return ['success' => false, 'error' => 'Course code already exists.'];
             }
             $id = $this->courseModel->create($data);
+            
+            // If class_id and year_id are provided, assign the course to the class
+            if (!empty($data['class_id']) && !empty($data['academic_year_id'])) {
+                $this->classModel->assignCourse(
+                    (int)$data['class_id'],
+                    $id,
+                    0, // No teacher assigned yet
+                    (int)$data['academic_year_id']
+                );
+            }
+
             $this->auditModel->log('course_created', 'courses', $id, null, $data);
             return ['success' => true, 'id' => $id, 'message' => 'Course created.'];
         } catch (Exception $e) {

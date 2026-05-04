@@ -34,12 +34,13 @@ class StudentModel extends BaseModel {
 
     public function create(array $data): int {
         return $this->db->insert(
-            "INSERT INTO students (user_id, student_id, first_name, last_name, gender, date_of_birth, phone, address, emergency_contact, enrollment_date)
-             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
+            "INSERT INTO students (user_id, student_id, first_name, last_name, gender, date_of_birth, phone, address, emergency_contact, trade_id, enrollment_date)
+             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
             [
                 $data['user_id'], $data['student_id'], $data['first_name'], $data['last_name'],
                 $data['gender'], $data['date_of_birth'], $data['phone'] ?? null,
                 $data['address'] ?? null, $data['emergency_contact'] ?? null,
+                $data['trade_id'] ?? null,
                 $data['enrollment_date'] ?? date('Y-m-d')
             ]
         );
@@ -48,10 +49,11 @@ class StudentModel extends BaseModel {
     public function update(int $id, array $data): int {
         return $this->db->execute(
             "UPDATE students SET first_name=?, last_name=?, gender=?, date_of_birth=?,
-             phone=?, address=?, emergency_contact=?, status=? WHERE id=?",
+             phone=?, address=?, emergency_contact=?, trade_id=?, status=? WHERE id=?",
             [
                 $data['first_name'], $data['last_name'], $data['gender'], $data['date_of_birth'],
                 $data['phone'] ?? null, $data['address'] ?? null, $data['emergency_contact'] ?? null,
+                $data['trade_id'] ?? null,
                 $data['status'] ?? 'active', $id
             ]
         );

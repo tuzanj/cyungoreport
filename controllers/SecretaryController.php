@@ -39,6 +39,7 @@ class SecretaryController {
             'emergency_contact' => trim($_POST['emergency_contact'] ?? ''),
             'email'             => trim($_POST['email'] ?? ''),
             'class_id'          => (int)($_POST['class_id'] ?? 0),
+            'trade_id'          => (int)($_POST['trade_id'] ?? 0),
             'academic_year_id'  => (int)($_POST['academic_year_id'] ?? 0),
         ];
 
@@ -179,6 +180,8 @@ class SecretaryController {
         if (empty($data['gender'])) $errors[] = 'Gender is required.';
         if (empty($data['email']) || !filter_var($data['email'], FILTER_VALIDATE_EMAIL)) $errors[] = 'Valid email is required.';
         if (!empty($data['email']) && $this->userModel->findByEmail($data['email'])) $errors[] = 'Email already in use.';
+        if (empty($data['class_id'])) $errors[] = 'Class selection is required.';
+        if (empty($data['trade_id'])) $errors[] = 'Trade selection is required.';
         return $errors;
     }
 

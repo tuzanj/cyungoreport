@@ -101,7 +101,16 @@ include ROOT_PATH . '/views/components/layout.php';
             <h4 class="font-semibold text-slate-700 text-sm uppercase tracking-wider mb-4 flex items-center gap-2">
                 <i class="fa-solid fa-graduation-cap text-teal-500"></i> Enrollment
             </h4>
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-6">
+                <div>
+                    <label class="block text-sm font-medium text-slate-700 mb-1.5">Trade *</label>
+                    <select name="trade_id" required class="w-full px-3 py-2.5 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-teal-500">
+                        <option value="">Select trade</option>
+                        <?php foreach ($trades ?? [] as $tr): ?>
+                        <option value="<?= $tr['id'] ?>" <?= (($_POST['trade_id']??'')==$tr['id'])?'selected':'' ?>><?= e($tr['name']) ?></option>
+                        <?php endforeach; ?>
+                    </select>
+                </div>
                 <div>
                     <label class="block text-sm font-medium text-slate-700 mb-1.5">Class *</label>
                     <select name="class_id" required class="w-full px-3 py-2.5 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-teal-500">

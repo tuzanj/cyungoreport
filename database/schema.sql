@@ -125,11 +125,13 @@ CREATE TABLE students (
     phone VARCHAR(20),
     address TEXT,
     emergency_contact VARCHAR(100),
+    trade_id INT,
     profile_photo VARCHAR(255),
     enrollment_date DATE,
     status ENUM('active','suspended','graduated','withdrawn') DEFAULT 'active',
     created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
+    FOREIGN KEY (trade_id) REFERENCES trades(id) ON DELETE SET NULL
 );
 
 CREATE TABLE parents (

@@ -31,6 +31,7 @@ $typeBadge = [
     <form method="POST" action="<?= defined('BASE_URL') ? BASE_URL : '' ?>/admin/courses.php">
         <input type="hidden" name="csrf_token" value="<?= function_exists('generateCsrfToken') ? generateCsrfToken() : '' ?>">
         <input type="hidden" name="form_action" value="<?= ($action === 'edit') ? 'update' : 'create' ?>">
+        <input type="hidden" name="academic_year_id" value="<?= $currentYearId ?>">
         <?php if ($action === 'edit' && isset($course['id'])): ?>
         <input type="hidden" name="course_id" value="<?= e($course['id']) ?>">
         <?php endif; ?>
@@ -68,14 +69,25 @@ $typeBadge = [
                        class="w-full px-3 py-2.5 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500">
             </div>
             <div>
-                <label class="block text-sm font-medium text-slate-700 mb-1.5">Trade</label>
-                <select name="trade_id" class="w-full px-3 py-2.5 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500">
-                    <option value="">— None —</option>
+                <label class="block text-sm font-medium text-slate-700 mb-1.5">Trade *</label>
+                <select name="trade_id" required class="w-full px-3 py-2.5 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                    <option value="">Select trade...</option>
                     <?php if (isset($departments)): foreach ($departments as $d): ?>
                     <option value="<?= $d['id'] ?>" <?= (($course['trade_id'] ?? '') == $d['id']) ? 'selected' : '' ?>><?= e($d['name']) ?></option>
                     <?php endforeach; endif; ?>
                 </select>
             </div>
+            <?php if ($action === 'new'): ?>
+            <div>
+                <label class="block text-sm font-medium text-slate-700 mb-1.5">Class *</label>
+                <select name="class_id" required class="w-full px-3 py-2.5 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                    <option value="">Select class...</option>
+                    <?php if (isset($classes)): foreach ($classes as $cl): ?>
+                    <option value="<?= $cl['id'] ?>"><?= e($cl['name']) ?></option>
+                    <?php endforeach; endif; ?>
+                </select>
+            </div>
+            <?php endif; ?>
             <div>
                 <label class="block text-sm font-medium text-slate-700 mb-1.5">Description</label>
                 <input type="text" name="description" value="<?= e($course['description'] ?? '') ?>"

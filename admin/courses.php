@@ -25,6 +25,7 @@ try {
     $currentYear     = $db->fetchOne("SELECT * FROM academic_years WHERE is_current=1 LIMIT 1");
     $currentYearId   = $currentYear ? (int)$currentYear['id'] : 0;
     $departments     = $db->fetchAll("SELECT * FROM trades ORDER BY name");
+    $classes         = $db->fetchAll("SELECT * FROM classrooms ORDER BY name");
 } catch (Exception $e) {
     error_log("Database error in admin/courses.php: " . $e->getMessage());
     die("Database error. Please ensure migrations are run. Error: " . e($e->getMessage()));
