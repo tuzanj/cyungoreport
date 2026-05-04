@@ -85,6 +85,7 @@ include ROOT_PATH . '/views/components/layout.php';
         </div>
     </form>
 </div>
+<?php endif; ?>
 
 <!-- Courses Table -->
 <div class="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden">
@@ -109,7 +110,14 @@ include ROOT_PATH . '/views/components/layout.php';
                     <td class="px-5 py-3 font-mono font-semibold text-indigo-700"><?= e($c['code']) ?></td>
                     <td class="px-5 py-3 font-medium"><?= e($c['name']) ?></td>
                     <td class="px-5 py-3">
-                        <?php $typeBadge = ['core'=>'bg-blue-100 text-blue-700','general'=>'bg-green-100 text-green-700','elective'=>'bg-purple-100 text-purple-700']; ?>
+                        <?php 
+                        $typeBadge = [
+                            'complementary' => 'bg-blue-100 text-blue-700',
+                            'general'       => 'bg-green-100 text-green-700',
+                            'specific'      => 'bg-indigo-100 text-indigo-700',
+                            'co-curricular' => 'bg-purple-100 text-purple-700'
+                        ]; 
+                        ?>
                         <span class="badge <?= $typeBadge[$c['type']] ?? 'bg-slate-100 text-slate-600' ?>"><?= ucfirst($c['type']) ?></span>
                     </td>
                     <td class="px-5 py-3 text-slate-600"><?= $c['credits'] ?></td>
@@ -167,4 +175,5 @@ function closeModal() {
 }
 </script>
 
-<?php include ROOT_PATH . '/views/components/footer.php'; ?>
+<?php include ROOT_PATH . '/views/components/footer.php'; 
+?>
